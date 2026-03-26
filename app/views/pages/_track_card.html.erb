@@ -1,0 +1,16 @@
+<div class = "track-card bg-neutral-800 h-58 w-46 rounded-2xl flex flex-col justify-center items-center flex-shrink-0">
+  <div class = "cover-image bg-neutral-700 h-36 w-40 rounded-2xl flex-shrink-0">
+    <% if track.album.cover_image&.attached? %>
+      <%= image_tag track.album.cover_image, class: "w-full h-full object-cover rounded-2xl" %>
+    <% else %>
+      <%= image_tag 'default-music.svg', class: "w-[70%] h-[70%] ml-[14%] mt-[14%]" %>
+    <% end %>
+  </div>
+  <div class = "track-name mt-2 truncate w-40">
+    <%= track.name %>
+  </div>
+  <div class = "track-artist text-neutral-400 truncate w-40">
+    <%= track.user.username %>
+  </div>
+
+</div>

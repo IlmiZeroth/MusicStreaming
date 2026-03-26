@@ -1,14 +1,12 @@
 class PagesController < ApplicationController
   def index
-    @name = params[:name]
-  end
+    @popular_tracks = Track.left_joins(:track_likes)
+                           .group(:id)
+                           .order('COUNT(track_likes.id) DESC')
+                           .limit(10)
+    @new_releases = Track.order(created_at: :desc).limit(10)
 
-  def home
-  end
-
-  def profile
-  end
-
-  def music
+    # Может быть пустым
+    @user_playlists = current_user&.playlists || []
   end
 end

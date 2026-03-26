@@ -1,0 +1,131 @@
+<%= render 'pages/header' %>
+<div class="container mx-auto p-4", data-controller="studio">
+  <div class="flex gap-4 mb-8">
+    <button id="toggle-album-form"
+            data-action="click->studio#toggleAlbum"
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+      Создать альбом
+    </button>
+    <button id="toggle-track-form"
+            data-action="click->studio#toggleTrack"
+            class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded <%= 'opacity-50 cursor-not-allowed' if current_user.albums.empty? %>"
+            <%= 'disabled' if current_user.albums.empty? %>>
+      Загрузить музыку
+    </button>
+  </div>
+
+  <div id="album-form" class="bg-white p-6 rounded-lg shadow-md mb-8" style="display: none;" data-studio-target="albumForm">
+    <h3 class="text-xl font-bold mb-4">Создать новый альбом</h3>
+    <%= form_with model: Album.new, local: true, html: { multipart: true, class: "space-y-4" } do |f| %>
+      <div>
+        <%= f.label :name, "Название альбома *", class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= f.text_field :name, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", required: true %>
+      </div>
+
+      <div>
+        <%= f.label :release_date, "Дата выпуска", class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= f.date_field :release_date, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+      </div>
+
+      <div>
+        <%= f.label :cover_image, "Обложка альбома", class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= f.file_field :cover_image, class: "w-full px-3 py-2 border border-gray-300 rounded-md", accept: "image/jpeg,image/jpg,image/png,image/webp" %>
+        <small class="text-sm text-gray-500 mt-1 block">
+          Поддерживаемые форматы: JPEG, PNG, WEBP. Максимальный размер: 5 MB
+        </small>
+      </div>
+
+      <%= f.submit "Создать альбом", class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded cursor-pointer" %>
+    <% end %>
+  </div>
+
+  <div id="track-form" class="bg-white p-6 rounded-lg shadow-md mb-8" style="display: none;" data-studio-target="trackForm">
+    <h3 class="text-xl font-bold mb-4">Загрузить трек</h3>
+    <%= form_with model: Track.new, local: true, html: { multipart: true, class: "space-y-4" } do |f| %>
+      <div>
+        <%= f.label :name, "Название трека *", class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= f.text_field :name, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", required: true %>
+      </div>
+
+      <div>
+        <%= f.label :album_id, "Альбом *", class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= f.select :album_id,
+                     current_user.albums.map { |a| [a.name, a.id] },
+                     { prompt: "Выберите альбом" },
+                     { class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", required: true } %>
+      </div>
+
+      <div>
+        <%= f.label :audio_file, "Аудиофайл *", class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= f.file_field :audio_file,
+                         class: "w-full px-3 py-2 border border-gray-300 rounded-md",
+                         accept: "audio/mpeg,audio/mp3,audio/wav,audio/flac",
+                         required: true %>
+      </div>
+
+      <div>
+        <%= f.label :number_in_album, "Номер в альбоме", class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= f.number_field :number_in_album, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", step: 1 %>
+      </div>
+
+      <%= f.submit "Загрузить трек", class: "bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded cursor-pointer" %>
+    <% end %>
+  </div>
+
+  <div class="albums-list">
+    <h2 class="text-2xl font-bold mb-6 text-white">Мои альбомы</h2>
+    <% if current_user.albums.any? %>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <% current_user.albums.each do |album| %>
+          <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+            <div class="p-6">
+              <div class = "flex justify-between flex-row">
+                <h3 class="text-xl font-bold"> <%= album.name %></h3>
+                <%= button_to "X", album_path(album.id), method: :delete, class: "text-red-700 hover:text-red-300 cursor-pointer" %>
+              </div>
+              <h4 class="text-base font-bold text-neutral-400"> <%= current_user.username %></h4>
+              <% if album.cover_image %>
+                <div class="mb-4">
+                  <%= image_tag album.cover_image, class: "h-40 w-40 rounded-2xl object-cover", style: "max-width: 300px" if album.cover_image.representable? %>
+                </div>
+              <% end %>
+              <p class="text-sm text-gray-600 mb-4"><%= pluralize(album.tracks.count, "трек") %></p>
+
+              <% if album.tracks.any? %>
+                <div class="border-t pt-4">
+                  <h4 class="font-semibold mb-3">Треки:</h4>
+                  <div class="space-y-3">
+                    <% album.tracks.order(:number_in_album).each do |track| %>
+                      <div class="bg-gray-50 rounded p-3 hover:bg-gray-100 transition">
+                        <div class="font-medium text-sm mb-2 flex justify-between flex-row">
+                          <% if track.number_in_album.present? %>
+                            <%= track.number_in_album %>.
+                          <% end %>
+                          <%= track.name %>
+                          <%= button_to "X", track_path(track.id), method: :delete, class: "text-red-700 hover:text-red-300 cursor-pointer" %>
+                        </div>
+                        <% if track.audio_file.attached? %>
+                          <audio controls class="w-full">
+                            <source src="<%= url_for(track.audio_file) %>"
+                                    type="<%= track.audio_file.content_type %>">
+                            Ваш браузер не поддерживает аудиоплеер.
+                          </audio>
+                        <% else %>
+                          <p class="text-sm text-gray-500">Аудиофайл отсутствует</p>
+                        <% end %>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
+              <% else %>
+                <p class="text-sm text-gray-500 mt-4">В этом альбоме пока нет треков</p>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="text-gray-500">У вас пока нет альбомов. Создайте первый!</p>
+    <% end %>
+  </div>
+</div>

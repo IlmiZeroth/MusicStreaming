@@ -1,29 +1,28 @@
-<h2>Sign up</h2>
-
-<%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
-  <%= render "devise/shared/error_messages", resource: resource %>
-
-  <div class="field">
-    <p><%= f.label :email %></p>
-    <p><%= f.email_field :email, autofocus: true, autocomplete: "email" %></p>
+<div class = "mr-10 mb-5">
+    <h1 class = "text-4xl text-white font-bold">Добро пожаловать</h1>
+    <h2 class = "text-xl text-neutral-400 mt-1">Создайте аккаунт</h2>
   </div>
+  <%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
+    <%= render "devise/shared/error_messages", resource: resource %>
 
-  <div class="field">
-    <p><%= f.label :password %></p>
-    <% if @minimum_password_length %>
-      <p><em>(<%= @minimum_password_length %> characters minimum)</em></p>
-    <% end %>
-    <p><%= f.password_field :password, autocomplete: "new-password" %></p>
-  </div>
+    <div class="field mt-4 text-neutral-600 bg-neutral-700 rounded-md h-10 w-80">
+      <%= f.text_field :username, placeholder: "Имя пользователя", class: "h-full w-full text-neutral-400 px-3"%>
+    </div>
 
-  <div class="field">
-    <p><%= f.label :password_confirmation %></p>
-    <p><%= f.password_field :password_confirmation, autocomplete: "new-password" %></p>
-  </div>
+    <div class="field mt-4 text-neutral-600 bg-neutral-700 rounded-md h-10 w-80">
+      <%= f.email_field :email, placeholder: "Email", class: "h-full w-full text-neutral-400 px-3"%>
+    </div>
 
-  <div class="actions">
-    <%= f.submit "Sign up" %>
-  </div>
-<% end %>
+    <div class="field mt-4 text-neutral-600 bg-neutral-700 rounded-md h-10 w-80">
+      <%= f.password_field :password, placeholder: "Пароль (мин. #{@minimum_password_length} символов)", class: "h-full w-full text-neutral-400 px-3"%>
+    </div>
 
-<%= render "devise/shared/links" %>
+    <div class="field mt-4 text-neutral-600 bg-neutral-700 rounded-md h-10 w-80">
+      <%= f.password_field :password_confirmation, placeholder: "Повторно пароль", class: "h-full w-full text-neutral-400 px-3"%>
+    </div>
+
+    <%= f.submit "Зарегистрироваться", class: "mt-8 w-80 h-10 text-white rounded-xl bg-green-500
+        hover:bg-green-400 transition-colors duration-300" %>
+  <% end %>
+
+  <%= render "devise/shared/links" %>
