@@ -11,30 +11,31 @@
 
     <%= yield :head %>
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
-
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
-    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "scrollbar", "data-turbo-track": "reload" %>
   </head>
 
-  <body>
-    <nav>
-      <%= auth_links %>
-    </nav>
-
-    <% if notice %>
-      <p class="notice"><%= notice %></p>
-    <% end %>
-
-    <% if alert %>
-      <p class="alert"><%= alert %></p>
-    <% end %>
-
-    <%= yield %>
+  <body class="flex bg-neutral-900 flex-col">
+  <% if notice %>
+    <p data-controller="notification" data-notification-delay-value="3000" class="notice text-white bg-neutral-800 w-100 h-13 rounded-md
+      pl-6 pt-3 mt-3 ml-3 border-2 border-yellow-200 border-solid absolute z-50"><%= notice %></p>
+  <% end %>
+  <% if alert %>
+    <p data-controller="notification" data-notification-delay-value="3000" class="alert text-white bg-neutral-800 w-100 h-13 rounded-md
+      pl-6 pt-3 mt-3 ml-3 border-2 border-red-400 border-solid absolute z-50"><%= alert %></p>
+  <% end %>
+  <% if controller_name == 'passwords' || controller_name == 'registrations' || controller_name == 'sessions' %>>
+    <div class = "mt-25 flex flex-col bg-neutral-800 h-min py-10 w-110 mx-auto items-center justify-center rounded-[20]">
+      <%= yield %>
+    </div>
+  <% else %>
+      <%= yield %>
+  <% end %>
   </body>
 </html>
