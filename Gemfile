@@ -10,7 +10,7 @@ gem "propshaft"
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
 
-gem "jsbundling-rails", "~> 1.3"
+
 # Hotwire's SPA-like page accelerator [https://turbo.hotwired.dev]
 gem "turbo-rails"
 # Hotwire's modest JavaScript framework [https://stimulus.hotwired.dev]
@@ -69,3 +69,4 @@ end
 gem "devise", "~> 5.0"
 
 gem "tailwindcss-rails", "~> 4.4"
+gem "jsbundling-rails", "~> 1.3"

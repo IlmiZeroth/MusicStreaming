@@ -1,17 +1,17 @@
 <%= render 'header' %>
 <div class = "page">
   <div class = "page-container flex flex-col gap-5 text-white">
-    <div class = "section ml-5 mt-5">
+    <div class = "section ml-5 mr-5 mt-5">
       <h2 class = "text-2xl">Популярные треки</h2>
-      <div class = "tracks flex flex-row gap-5 mt-3 overflow-x-auto">
+      <div class = "tracks flex flex-row gap-5 mt-3 pb-1 overflow-x-auto">
         <% @popular_tracks.each do |track| %>
           <%= render 'track_card', track: track %>
         <% end %>
       </div>
     </div>
-    <div class = "section ml-5 mt-5">
+    <div class = "section ml-5 mr-5 mt-5">
       <h2 class = "text-2xl">Новинки</h2>
-      <div class = "tracks flex flex-row gap-5 mt-3 overflow-x-auto">
+      <div class = "tracks flex flex-row gap-5 mt-3 pb-1 overflow-x-auto">
         <% @new_releases.each do |track| %>
           <%= render 'track_card', track: track %>
         <% end %>
