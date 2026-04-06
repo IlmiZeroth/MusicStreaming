@@ -1,0 +1,48 @@
+<div data-controller="audio-player" class="audio-player h-30 text-white border-t border-solid border-neutral-700 bg-neutral-800 fixed bottom-0 w-full">
+  <!-- Волновая форма -->
+  <div class = "relative w-full">
+    <div id="waveform" data-audio-player-target="waveform" class="waveform-container w-full pointer-events-auto hover: cursor-text">
+    </div>
+    <div class = "absolute grid grid-rows-1 grid-cols-3 inset-0 z-50 w-full ml-5 pr-10 mt-2 pointer-events-none">
+      <div class="track grid">
+        <div class="track-info flex justify-start" data-audio-player-target="trackInfo">
+          <img class="object-cover rounded-2xl w-20 h-20" data-audio-player-target="trackImage">
+          <div>
+            <h3 class = "ml-2 pointer-events-auto" data-audio-player-target="trackTitle">Выберите трек</h3>
+            <p class="ml-2 text-neutral-400 pointer-events-auto" data-audio-player-target="trackArtist"></p>
+          </div>
+        </div>
+        <div class="time-display">
+          <span data-audio-player-target="currentTime">0:00</span>
+          <span>/</span>
+          <span data-audio-player-target="duration">0:00</span>
+        </div>
+      </div>
+
+      <div class="player-controls flex justify-center">
+        <button data-action="audio-player#playPause" data-audio-player-target="playButton" class="align-middle control-btn h-min mt-8 pointer-events-auto hover: cursor-pointer">
+          <%= show_svg "play.svg", width: 40, height: 40, fill: "#FFFFFF" %>
+        </button>
+      </div>
+      <div class = "audio-controls group flex justify-end items-center">
+      <div class="relative flex flex-col justify-end items-center">
+          <div class = "absolute invisible bottom-full z-50 -rotate-90 mb-8 group-hover:visible transition-all duration-300">
+            <input type="range"
+                   data-action="input->audio-player#setVolume"
+                   data-audio-player-target="volumeSlider"
+                   class="volume-slider pointer-events-auto"
+                   min="0"
+                   max="100"
+                   value="70">
+          </div>
+          <button data-action="audio-player#toggleMute"
+                  data-audio-player-target="volumeButton"
+                  class="control-btn h-min mt-8 pointer-events-auto shrink-0 hover: cursor-pointer">
+            <%= show_svg "sound-2.svg", width: 30, height: 30, fill: "#FFFFFF" %>
+          </button>
+      </div>
+      </div>
+    </div>
+    </div>
+  </div>
+</div>

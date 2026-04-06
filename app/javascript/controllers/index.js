@@ -15,3 +15,6 @@ application.register("notification", NotificationController)
 
 import StudioController from "./studio_controller"
 application.register("studio", StudioController)
+
+import TrackCardController from "./track_card_controller"
+application.register("track-card", TrackCardController)
