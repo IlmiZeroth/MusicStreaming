@@ -1,6 +1,6 @@
 <%= render 'header' %>
 <div class = "page">
-  <div class = "page-container flex flex-col gap-5 text-white">
+  <div class = "page-container flex flex-col gap-5 text-white mb-40">
     <div class = "section ml-5 mr-5 mt-5">
       <h2 class = "text-2xl">Популярные треки</h2>
       <div class = "tracks flex flex-row gap-5 mt-3 pb-1 overflow-x-auto">
@@ -17,18 +17,7 @@
         <% end %>
       </div>
     </div>
-    <div class = "section ml-5 mt-5">
-      <h2 class = "text-2xl">Ваши плейлисты</h2>
-      <div class = "tracks flex flex-row gap-5 mt-3 overflow-x-auto">
-        <div class = "track-card bg-neutral-800 h-58 w-48 rounded-2xl flex flex-col justify-center items-center">
-          <div class = "cover-image bg-neutral-700 h-36 w-40 rounded-2xl object-cover">
-
-          </div>
-          <div class = "track-name mt-2">Old School Holywood</div>
-          <div class = "track-artist text-neutral-400">System of Down</div>
-
-        </div>
-      </div>
-    </div>
   </div>
 </div>
+<%= render 'player' %>
+<%= render 'footer' %>
