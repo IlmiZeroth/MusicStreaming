@@ -11,6 +11,7 @@ class Track < ApplicationRecord
   has_one_attached :audio_file
 
   validates :name, presence: true
+  validates :streams, presence: true
   validates :duration, presence: true, numericality: { greater_than: 0, smaller_than: 1800 }, allow_nil: true
   validates :number_in_album, numericality: { greater_than_or_equal_to: 1 }, allow_nil: true
 end

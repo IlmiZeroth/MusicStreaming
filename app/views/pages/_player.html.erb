@@ -1,4 +1,4 @@
-<div data-controller="audio-player" class="audio-player h-30 text-white border-t border-solid border-neutral-700 bg-neutral-800 fixed bottom-0 w-full">
+<div data-controller="audio-player" data-audio-player-target="player" class="audio-player hidden h-30 text-white border-t border-solid border-neutral-700 bg-neutral-800 fixed bottom-0 w-full">
   <!-- Волновая форма -->
   <div class = "relative w-full">
     <div id="waveform" data-audio-player-target="waveform" class="waveform-container w-full pointer-events-auto hover: cursor-text">
@@ -8,7 +8,7 @@
         <div class="track-info flex justify-start" data-audio-player-target="trackInfo">
           <img class="object-cover rounded-2xl w-20 h-20" data-audio-player-target="trackImage">
           <div>
-            <h3 class = "ml-2 pointer-events-auto" data-audio-player-target="trackTitle">Выберите трек</h3>
+            <h3 class = "ml-2 pointer-events-auto" data-audio-player-target="trackTitle">Загрузка...</h3>
             <p class="ml-2 text-neutral-400 pointer-events-auto" data-audio-player-target="trackArtist"></p>
           </div>
         </div>

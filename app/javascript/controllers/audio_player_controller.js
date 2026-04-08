@@ -3,11 +3,12 @@ import { Icons } from "./icons";
 import WaveSurfer from "wavesurfer.js";
 
 export default class extends Controller {
-    static targets = ["waveform", "playButton", "currentTime", "duration", "volumeButton", "volumeSlider", "trackTitle", "trackArtist", "trackImage"];
+    static targets = ["player", "waveform", "playButton", "currentTime", "duration", "volumeButton", "volumeSlider", "trackTitle", "trackArtist", "trackImage"];
     connect() {
         console.log("WaveSurfer инициализирован!");
         this.isPlaying = false;
         this.currentTrack = null;
+        this.isAppeared = false;
 
         this.playButtonTarget.innerHTML = Icons.play;
         this.volumeButtonTarget.innerHTML = Icons.highSound;
@@ -37,6 +38,7 @@ export default class extends Controller {
 
     handlePlayTrack(event) {
         const { url, name, artist, image } = event.detail;
+
         this.loadTrack(url, name, artist, image);
     }
     disconnect() {
@@ -91,7 +93,13 @@ export default class extends Controller {
                 this.wavesurfer.play();
                 this.playButtonTarget.innerHTML = Icons.pause;
             }
-
+            if(!this.isAppeared){
+                this.playerTarget.classList.toggle("hidden");
+                this.wavesurfer.play();
+                this.playButtonTarget.innerHTML = Icons.pause;
+                this.isPlaying = true;
+                this.isAppeared = true;
+            }
         }
     }
 
