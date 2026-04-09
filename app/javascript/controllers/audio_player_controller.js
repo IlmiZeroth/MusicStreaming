@@ -6,6 +6,7 @@ export default class extends Controller {
     static targets = ["player", "waveform", "playButton", "currentTime", "duration", "volumeButton", "volumeSlider", "trackTitle", "trackArtist", "trackImage"];
     connect() {
         console.log("WaveSurfer инициализирован!");
+        if(this.wavesurfer) return;
         this.isPlaying = false;
         this.currentTrack = null;
         this.isAppeared = false;
@@ -42,10 +43,10 @@ export default class extends Controller {
         this.loadTrack(url, name, artist, image);
     }
     disconnect() {
-        document.removeEventListener('play-track', this.handlePlayTrack.bind(this));
-        if (this.wavesurfer) {
-            this.wavesurfer.destroy();
-        }
+        // document.removeEventListener('play-track', this.handlePlayTrack.bind(this));
+        // if (this.wavesurfer) {
+        //     this.wavesurfer.destroy();
+        // }
     }
 
     setupEventListeners() {
@@ -94,7 +95,7 @@ export default class extends Controller {
                 this.playButtonTarget.innerHTML = Icons.pause;
             }
             if(!this.isAppeared){
-                this.playerTarget.classList.toggle("hidden");
+                this.playerTarget.classList.remove("hidden");
                 this.wavesurfer.play();
                 this.playButtonTarget.innerHTML = Icons.pause;
                 this.isPlaying = true;

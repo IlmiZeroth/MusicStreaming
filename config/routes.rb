@@ -7,6 +7,7 @@ Rails.application.routes.draw do
   get "studio" => "studio#index", as: :studio
   root "pages#index"
   resources :pages, only: [:index]
+  resources :profile, only: [:show]
   resources :albums, only: [:create, :destroy, :update]
   resources :tracks, only: [:create, :destroy, :update]
 end

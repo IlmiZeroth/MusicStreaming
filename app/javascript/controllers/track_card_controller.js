@@ -6,7 +6,6 @@ export default class extends Controller {
     }
 
     playTrack(){
-        // Диспатчим кастомное событие
         const event = new CustomEvent('play-track', {
             detail: {
                 url: this.urlValue,
@@ -14,7 +13,7 @@ export default class extends Controller {
                 artist: this.artistValue,
                 image: this.imageValue
             },
-            bubbles: true // чтобы событие всплывало вверх
+            bubbles: true
         });
         this.element.dispatchEvent(event);
     }

@@ -1,4 +1,8 @@
-<div data-controller="audio-player" data-audio-player-target="player" class="audio-player hidden h-30 text-white border-t border-solid border-neutral-700 bg-neutral-800 fixed bottom-0 w-full">
+<div data-controller="audio-player"
+     id="audio-player-permanent"
+     data-turbo-permanent
+     data-audio-player-target="player"
+     class="audio-player hidden h-30 text-white border-t border-solid border-neutral-700 bg-neutral-800 fixed bottom-0 w-full">
   <!-- Волновая форма -->
   <div class = "relative w-full">
     <div id="waveform" data-audio-player-target="waveform" class="waveform-container w-full pointer-events-auto hover: cursor-text">
