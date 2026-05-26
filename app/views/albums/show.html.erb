@@ -1,0 +1,41 @@
+<%= render "shared/header" %>
+<div class = "album-page">
+  <div class = "album-info flex gap-3 pl-3 mt-3 pb-5 border-b border-solid border-b-neutral-800">
+    <div class = "return text-neutral-400 w-8 h-8">
+      <%= link_to :back do %>
+        <%= image_tag 'back.svg' %>
+      <% end %>
+    </div>
+    <div class = "album-cover h-40 w-40">
+      <% if @album.cover_image.attached? %>
+        <%= image_tag @album.cover_image, class: "w-full h-full object-cover rounded-2xl" %>
+      <% else %>
+        <%= image_tag 'default-music.svg', class: "w-full h-full object-cover rounded-2xl"  %>
+      <% end %>
+    </div>
+    <div class = "artist-details flex-col">
+      <div class = "artist-name ml-1">
+        <p class = "text-neutral-500 text-l">Альбом</p>
+        <p class = "text-white text-2xl"><%= @album.name %></p>
+      </div>
+      <div class = "artist-stats flex h-7 gap-3 mt-3">
+        <div class = "streams text-white bg-neutral-800 ps-3 pe-3 rounded-2xl"><%= number_with_delimiter @album.total_streams %> слушателя в месяц</div>
+        <div class = "tracks-count text-white bg-neutral-800 ps-3 pe-3 rounded-2xl"> <%= number_with_delimiter @album.tracks_count %> треков </div>
+      </div>
+      <div class = "control-buttons flex gap-10">
+        <div class = "listen-button h-10 mt-3">
+          <button class = "bg-green-400 flex gap-2 justify-center items-center hover:text-gray-700 hover:cursor-pointer border border-solid rounded-2xl border-green-400 pt-1 pb-1 ps-3 pe-3 text-black">
+            <%= image_tag "play.svg", class: "w-5 h-5"%> Слушать
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class = "album-content">
+    <div class = "tracks flex flex-col gap-5 mt-3 pb-1 overflow-x-auto">
+      <% @tracks.each do |track| %>
+        <%= render "shared/track", track: track%>
+      <% end %>
+    </div>
+  </div>
+</div>

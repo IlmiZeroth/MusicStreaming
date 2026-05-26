@@ -24,6 +24,13 @@ class TracksController < PagesController
 
   end
 
+  def stream
+    @track = Track.find(params[:id])
+    if @track.present?
+      @track.increment!(:streams)
+    end
+  end
+
   def track_params
     params.require(:track).permit(:name, :audio_file, :number_in_album, :album_id)
   end

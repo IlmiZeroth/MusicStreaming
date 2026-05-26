@@ -1,4 +1,8 @@
 class AlbumsController < PagesController
+  def show
+    @album = Album.find(params[:id])
+    @tracks = @album.tracks.order(number_in_album: :asc)
+  end
   def create
     @album = current_user.albums.build(album_params)
 

@@ -1,0 +1,16 @@
+<div data-controller="track-card"
+     data-track-card-id-value="<%= track.id %>"
+     data-track-card-artist-value="<%= track.user.username %>"
+     data-track-card-name-value="<%= track.name %>"
+     data-track-card-url-value="<%= url_for track.audio_file %>"
+     data-track-card-image-value="<%= url_for track.album.cover_image %>>"
+     class = "track-card text-white bg-neutral-800 h-13 ml-10 mr-10 pl-2 rounded-2xl flex items-center flex-row flex-shrink-0">
+  <div data-action="click->track-card#playTrack" class="hover:cursor-pointer">
+    <%= image_tag "play.svg", class: "w-7 h-7"%>
+  </div>
+  <div class = "track-info flex flex-col truncate w-40 ml-2">
+    <div class = "track-name text-white"> <%= track.name %> </div>
+    <div class = "track-artist text-neutral-400"> <%= link_to track.user.username, profile_path(track.user.id) %> </div>
+  </div>
+
+</div>

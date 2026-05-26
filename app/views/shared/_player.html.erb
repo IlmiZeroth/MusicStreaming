@@ -25,7 +25,7 @@
 
       <div class="player-controls flex justify-center">
         <button data-action="audio-player#playPause" data-audio-player-target="playButton" class="align-middle control-btn h-min mt-8 pointer-events-auto hover: cursor-pointer">
-          <%= show_svg "play.svg", width: 40, height: 40, fill: "#FFFFFF" %>
+          <%= image_tag "play.svg", class: "w-10 h-10" %>
         </button>
       </div>
       <div class = "audio-controls group flex justify-end items-center">
@@ -42,7 +42,7 @@
           <button data-action="audio-player#toggleMute"
                   data-audio-player-target="volumeButton"
                   class="control-btn h-min mt-8 pointer-events-auto shrink-0 hover: cursor-pointer">
-            <%= show_svg "sound-2.svg", width: 30, height: 30, fill: "#FFFFFF" %>
+            <%= image_tag "sound-2.svg", class: "w-10 h-10" %>
           </button>
       </div>
       </div>

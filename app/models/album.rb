@@ -9,4 +9,12 @@ class Album < ApplicationRecord
 
   validates :name, presence: true
   validates :release_date, presence: true
+
+
+  def total_streams
+    tracks.sum(:streams)
+  end
+  def tracks_count
+    tracks.count
+  end
 end
