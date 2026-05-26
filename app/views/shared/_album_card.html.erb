@@ -1,0 +1,27 @@
+<div data-controller="album-card"
+     class="album-card text-white bg-neutral-800 h-58 w-46 rounded-2xl flex flex-col justify-center items-center flex-shrink-0">
+
+  <div class="cover-image relative bg-neutral-700 h-36 w-40 rounded-2xl flex-shrink-0">
+    <%= link_to album_path(album), class: "block w-full h-full" do %>
+      <% if album.cover_image&.attached? %>
+        <%= image_tag album.cover_image, class: "w-full h-full object-cover rounded-2xl" %>
+      <% else %>
+        <%= image_tag 'default-music.svg', class: "w-[70%] h-[70%] ml-[14%] mt-[14%]" %>
+      <% end %>
+    <% end %>
+
+    <div class="absolute inset-0 flex pl-2 pb-2 items-end rounded-2xl backdrop-blur-sm opacity-0 transition-opacity duration-300 hover:opacity-100 pointer-events-none">
+      <%= image_tag "play.svg",
+                    data: { action: "click->album-card#playTrack" },
+                    class: "w-10 h-10 cursor-pointer pointer-events-auto" %>
+    </div>
+  </div>
+
+  <div class="album-name mt-2 truncate w-40">
+    <%= link_to album.name, album_path(album), class: "hover:underline" %>
+  </div>
+
+  <div class="album-artist text-neutral-400 truncate w-40 hover:text-gray-400">
+    <%= link_to album.user.username, profile_path(album.user.id) %>
+  </div>
+</div>

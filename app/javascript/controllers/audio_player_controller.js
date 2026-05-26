@@ -38,9 +38,9 @@ export default class extends Controller {
     }
 
     handlePlayTrack(event) {
-        const { url, name, artist, image } = event.detail;
+        const { id, url, name, artist, image } = event.detail;
 
-        this.loadTrack(url, name, artist, image);
+        this.loadTrack(id, url, name, artist, image);
     }
     disconnect() {
         // document.removeEventListener('play-track', this.handlePlayTrack.bind(this));
@@ -81,15 +81,24 @@ export default class extends Controller {
     }
 
     // Загрузка трека (вызывается извне)
-    async loadTrack(trackUrl, trackName, trackArtist, trackImage) {
+    async loadTrack(trackId, trackUrl, trackName, trackArtist, trackImage) {
         if (this.wavesurfer) {
             this.currentTrack = {
+                id: trackId,
                 title: trackName,
                 artist: trackArtist,
                 image: trackImage
             };
+            fetch(`/tracks/${trackId}/stream`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content,
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'
+            }).catch();
             await this.wavesurfer.load(trackUrl);
-
+        }
             if(this.isPlaying) {
                 this.wavesurfer.play();
                 this.playButtonTarget.innerHTML = Icons.pause;
@@ -102,7 +111,6 @@ export default class extends Controller {
                 this.isAppeared = true;
             }
         }
-    }
 
     // Play/Pause
     playPause() {

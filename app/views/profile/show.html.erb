@@ -1,3 +1,70 @@
 <%= render "shared/header" %>
+<% if @user %>
+  <div class = "profile mb-40">
+    <div class = "artist-info flex gap-3 pl-3 mt-3 pb-2 border-b border-solid border-b-neutral-800">
+      <div class = "artist-avatar h-40 w-40">
+        <% if @user.avatar.attached? %>
+          <%= image_tag @user.avatar, class: "w-full h-full object-cover rounded-2xl" %>
+        <% else %>
+          <%= image_tag 'default-user.svg', class: "w-full h-full object-cover rounded-2xl"  %>
+        <% end %>
+      </div>
+      <div class = "artist-details flex-col">
+        <div class = "artist-name ml-1">
+          <p class = "text-neutral-500 text-l">Исполнитель</p>
+          <p class = "text-white text-2xl"><%= @user.username %></p>
+        </div>
+        <div class = "artist-stats flex h-7 gap-3 mt-3">
+          <div class = "streams text-white bg-neutral-800 ps-3 pe-3 rounded-2xl"><%= number_with_delimiter @user.total_streams %> слушателя в месяц</div>
+          <div class = "tracks-count text-white bg-neutral-800 ps-3 pe-3 rounded-2xl"> <%= number_with_delimiter @user.tracks_count %> треков </div>
+          <div class = "albums-count text-white bg-neutral-800 ps-3 pe-3 rounded-2xl"> <%= number_with_delimiter @user.albums_count %> альбомов </div>
+        </div>
+        <div class = "control-buttons flex gap-10">
+          <div class = "listen-button h-10 mt-3">
+            <button class = "bg-green-400 flex gap-2 justify-center items-center hover:text-gray-700 hover:cursor-pointer border border-solid rounded-2xl border-green-400 pt-1 pb-1 ps-3 pe-3 text-black">
+              <%= image_tag "play.svg", class: "w-5 h-5"%> Слушать
+            </button>
+          </div>
+          <div class = "follow-button h-10 mt-3">
+            <% if current_user != @user && !current_user.following?(@user) %>
+              <%= button_to "+ Подписаться", follow_path, method: :post, class: "bg-neutral-800 flex gap-2 justify-center items-center hover:text-neutral-300 hover:cursor-pointer border border-solid rounded-2xl border-green-400 pt-1 pb-1 ps-3 pe-3 text-white transition-colors duration-700" %>
+            <% elsif current_user != @user %>
+              <%= button_to "Вы подписаны", unfollow_path, method: :delete, class: "bg-green-400 flex gap-1 justify-center items-center text-black hover:text-neutral-300 hover:cursor-pointer border border-solid rounded-2xl border-green-400 pt-1 pb-1 ps-3 pe-3 transition-colors duration-700" %>
+            <% else %>
+              <div class = "justify-center items-center text-neutral-300 pt-1 pb-1 ps-3 pe-3"> Это ваш профиль </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
 
-<%= render "shared/footer" %>
+    <div class = "artist-content">
+      <div class = "popular-tracks section ml-5 mr-5 mt-5">
+        <h2 class = "text-2xl text-white">Популярные треки</h2>
+        <div class = "tracks flex flex-row gap-5 mt-3 pb-1 overflow-x-auto">
+          <% @popular_tracks.each do |track| %>
+            <%= render 'shared/track_card', track: track %>
+          <% end %>
+        </div>
+      </div>
+      <div class = "albums section ml-5 mr-5 mt-5">
+        <h2 class = "text-2xl text-white">Альбомы</h2>
+        <div class = "flex flex-row gap-5 mt-3 pb-1 overflow-x-auto">
+          <% @user_albums.each do |album| %>
+            <%= render 'shared/album_card', album: album %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class = "similar-artists">
+
+    </div>
+  </div>
+<% else %>
+
+  <div class = "flex justify-center items-center text-2xl text-white gap-3 mt-30">
+    <%= image_tag 'not-found.svg', class: "w-30 h-30 object-cover rounded-2xl"  %>
+    Пользователь не найден
+  </div>
+<% end %>

@@ -7,30 +7,31 @@ module ApplicationHelper
     end
   end
 
-  def show_svg(path, width: nil, height: nil, fill: nil)
-    svg_content = File.open("app/assets/images/#{path}", "rb") do |file|
-      file.read
-    end
-
-    # Удаляем XML декларацию и комментарии
-    svg_content = svg_content.gsub(/<\?xml.*?\?>/, '')
-    svg_content = svg_content.gsub(/<!--.*?-->/, '')
-
-    # Удаляем старые атрибуты и вставляем новые
-    svg_content = svg_content.gsub(/width="[^"]*"/, '')
-    svg_content = svg_content.gsub(/height="[^"]*"/, '')
-    svg_content = svg_content.gsub(/fill="[^"]*"/, '')
-
-    # Вставляем новые атрибуты
-    attrs = []
-    attrs << "width=\"#{width}\"" if width
-    attrs << "height=\"#{height}\"" if height
-    attrs << "fill=\"#{fill}\"" if fill
-
-    if attrs.any?
-      svg_content = svg_content.gsub(/<svg /, "<svg #{attrs.join(' ')} ")
-    end
-
-    raw svg_content
-  end
+  # Мусор, который я зачем-то решил добавить под пьянным угаром и сейчас понял, что это мне не нужно
+  # def show_svg(path, width: nil, height: nil, fill: nil)
+  #   svg_content = File.open("app/assets/images/#{path}", "rb") do |file|
+  #     file.read
+  #   end
+  #
+  #   # Удаляем XML декларацию и комментарии
+  #   svg_content = svg_content.gsub(/<\?xml.*?\?>/, '')
+  #   svg_content = svg_content.gsub(/<!--.*?-->/, '')
+  #
+  #   # Удаляем старые атрибуты и вставляем новые
+  #   svg_content = svg_content.gsub(/width="[^"]*"/, '')
+  #   svg_content = svg_content.gsub(/height="[^"]*"/, '')
+  #   svg_content = svg_content.gsub(/fill="[^"]*"/, '')
+  #
+  #   # Вставляем новые атрибуты
+  #   attrs = []
+  #   attrs << "width=\"#{width}\"" if width
+  #   attrs << "height=\"#{height}\"" if height
+  #   attrs << "fill=\"#{fill}\"" if fill
+  #
+  #   if attrs.any?
+  #     svg_content = svg_content.gsub(/<svg /, "<svg #{attrs.join(' ')} ")
+  #   end
+  #
+  #   raw svg_content
+  # end
 end

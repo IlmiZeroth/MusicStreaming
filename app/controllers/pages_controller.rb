@@ -1,8 +1,6 @@
 class PagesController < ApplicationController
   def index
-    @popular_tracks = Track.left_joins(:track_likes)
-                           .group(:id)
-                           .order('COUNT(track_likes.id) DESC')
+    @popular_tracks = Track.order(streams: :desc)
                            .limit(10)
     @new_releases = Track.order(created_at: :desc).limit(10)
 
