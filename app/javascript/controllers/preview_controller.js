@@ -1,27 +1,22 @@
-// app/javascript/controllers/avatar_preview_controller.js
+// app/javascript/controllers/preview_controller.js
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
     static targets = ["preview", "input"]
-
-    connect() {
-        console.log("Avatar preview controller connected")
-    }
+    static values = { defaultUrl: String }
 
     preview() {
         const file = this.inputTarget.files[0]
 
         if (file) {
-            // Проверяем тип файла
             if (!file.type.match('image.*')) {
                 alert('Пожалуйста, выберите изображение')
                 this.inputTarget.value = ''
                 return
             }
 
-            // Проверяем размер файла (например, максимум 5MB)
             if (file.size > 5 * 1024 * 1024) {
-                alert('Файл太大了. Максимальный размер 5MB')
+                alert('Максимальный размер 5MB')
                 this.inputTarget.value = ''
                 return
             }
@@ -34,14 +29,13 @@ export default class extends Controller {
 
             reader.readAsDataURL(file)
         } else {
-            // Если файл не выбран, показываем дефолтную аватарку
-            this.previewTarget.src = this.previewTarget.dataset.defaultUrl || '/assets/default-user.svg'
+            this.resetPreview()
         }
     }
 
     resetPreview() {
-        // Сброс превью к дефолтному изображению
-        this.previewTarget.src = this.previewTarget.dataset.defaultUrl || '/assets/default-user.svg'
+        const defaultUrl = this.defaultUrlValue || '/assets/default-user.svg'
+        this.previewTarget.src = defaultUrl
         this.inputTarget.value = ''
     }
 }

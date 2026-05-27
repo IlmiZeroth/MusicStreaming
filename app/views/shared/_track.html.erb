@@ -10,7 +10,17 @@
   </div>
   <div class = "track-info flex flex-col truncate w-full ml-2 mr-2">
     <div class = "track-name text-white"> <%= track.name %> </div>
-    <div class = "track-artist text-neutral-400"> <%= link_to track.user.username, profile_path(track.user.id) %> </div>
+    <div class = "track-artist text-neutral-400 hover:text-gray-400"> <%= link_to track.user.username, profile_path(track.user.id) %> </div>
   </div>
+  <% if @show_actions %>
+    <div class="delete-button w-7 h-7 mr-2 ">
+      <%= button_to track_path(track),
+                    method: :delete,
+                    class: "hover:cursor-pointer",
+                    data: { turbo_confirm: "Вы уверены, что хотите удалить трек '#{track.name}'?" } do %>
+        <%= image_tag "delete.svg"%>
+      <% end %>
+    </div>
+  <% end %>
 
 </div>

@@ -1,0 +1,39 @@
+<div class = "create-album text-white flex justify-center" data-studio-target="albumForm">
+  <%= form_with model: Album.new, local: true, html: { multipart: true, class: "mt-5 mb-5 pt-3 pb-3 pr-5 pl-5 rounded-2xl gap-7 flex flex-row items-center justify-center bg-neutral-800" } do |f| %>
+    <div data-controller="preview"
+         data-preview-default-url-value="<%= asset_path('default-music.svg') %>"
+         class="cover-image flex flex-col items-center">
+
+      <div class="album-cover h-28 w-28 rounded-2xl overflow-hidden bg-neutral-700">
+        <img data-preview-target="preview"
+             class="w-full h-full object-cover"
+             src="<%= asset_path('default-music.svg') %>" />
+      </div>
+
+      <div class="change-cover relative">
+        <%= f.label :cover_image, "Сменить обложку", class: "hover:text-neutral-400 cursor-pointer" %>
+        <%= f.file_field :cover_image,
+                         class: "hidden",
+                         accept: "image/png,image/jpeg,image/jpg,image/webp",
+                         data: {
+                           action: "change->preview#preview",
+                           preview_target: "input"
+                         } %>
+      </div>
+    </div>
+
+    <div class = "flex flex-col">
+      <%= f.label :name, "Название альбома *", class: "" %>
+      <%= f.text_field :name, class: "bg-neutral-700 rounded-2xl pl-1 pr-1 pt-1 pb-1", required: true %>
+    </div>
+
+    <div class = "flex flex-col">
+      <%= f.label :release_date, "Дата выпуска *", class: "-" %>
+      <%= f.date_field :release_date, class: "bg-neutral-700 rounded-2xl pl-1 pr-1 pt-1 pb-1", required: true %>
+    </div>
+
+    <div class = "flex flex-col bg-green-500 mt-6 rounded-2xl hover:cursor-pointer hover:bg-green-400 transition-colors delay-75">
+      <%= f.submit "+ Создать альбом", class: "pl-1 pr-1 pt-1 pb-1" %>
+    </div>
+  <% end %>
+</div>

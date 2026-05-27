@@ -1,7 +1,6 @@
 class ProfileController < ApplicationController
   before_action :set_user, only: [:show, :settings, :update_settings]
   before_action :authorize_settings_access!, only: [:settings, :update_settings]
-  skip_before_action :authenticate_user!, only: [:show]
 
   def show
     @user = User.find_by(id: params[:id])

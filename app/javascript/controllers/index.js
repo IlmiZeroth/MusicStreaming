@@ -19,5 +19,5 @@ application.register("studio", StudioController)
 import TrackCardController from "./track_card_controller"
 application.register("track-card", TrackCardController)
 
-import AvatarPreviewController from "./avatar_preview_controller"
-application.register("avatar-preview", AvatarPreviewController)
+import PreviewController from "./preview_controller"
+application.register("preview", PreviewController)

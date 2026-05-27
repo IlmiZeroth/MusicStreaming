@@ -37,5 +37,9 @@
         <%= render "shared/track", track: track%>
       <% end %>
     </div>
+    <% if @show_actions %>
+      <%= render "shared/track_create" %>
+    <% end %>
+
   </div>
 </div>
