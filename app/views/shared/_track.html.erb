@@ -8,7 +8,7 @@
   <div data-action="click->track-card#playTrack" class="hover:cursor-pointer">
     <%= image_tag "play.svg", class: "w-7 h-7"%>
   </div>
-  <div class = "track-info flex flex-col truncate w-40 ml-2">
+  <div class = "track-info flex flex-col truncate w-full ml-2 mr-2">
     <div class = "track-name text-white"> <%= track.name %> </div>
     <div class = "track-artist text-neutral-400"> <%= link_to track.user.username, profile_path(track.user.id) %> </div>
   </div>

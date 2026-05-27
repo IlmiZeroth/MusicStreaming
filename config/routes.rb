@@ -10,7 +10,10 @@ Rails.application.routes.draw do
   delete "followers/:id", to: "followers#destroy", as: :unfollow
 
   resources :pages, only: [:index]
-  resources :profile, only: [:show]
+  resources :profile, only: [:show, :update] do
+    get :settings
+    patch :update_settings
+  end
   resources :albums, only: [:show, :create, :destroy, :update]
   resources :tracks, only: [:create, :destroy, :update]
   resources :tracks do

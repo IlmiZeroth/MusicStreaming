@@ -2,6 +2,11 @@
 <% if @user %>
   <div class = "profile mb-40">
     <div class = "artist-info flex gap-3 pl-3 mt-3 pb-2 border-b border-solid border-b-neutral-800">
+      <div class = "return text-neutral-400 w-8 h-8">
+        <%= link_to :back do %>
+          <%= image_tag 'left.svg' %>
+        <% end %>
+      </div>
       <div class = "artist-avatar h-40 w-40">
         <% if @user.avatar.attached? %>
           <%= image_tag @user.avatar, class: "w-full h-full object-cover rounded-2xl" %>
