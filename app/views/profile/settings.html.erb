@@ -1,5 +1,5 @@
 <%= render "shared/header" %>
-<div class = "settings flex justify-center items-center h-screen mt-40 mb-40">
+<div class = "settings flex justify-center items-center h-screen mt-25 mb-40">
 <div class = "settings-card w-1/3 bg-neutral-800 rounded-2xl flex flex-col text-white font-bold">
   <div class = "settings-header pl-2 pt-2 pb-2 flex flex-row gap-5 border border-solid border-neutral-700 rounded-2xl">
     <div class = "return w-8 h-8 text-2xl text-neutral-700">
@@ -11,12 +11,10 @@
   </div>
   <%= form_with model: @user, url: profile_update_settings_path, method: :patch, local: true, class: "flex flex-col p-6 gap-5" do |f| %>
 
-    <!-- Аватар -->
     <div class="avatar flex flex-col items-center gap-2">
       <div class="artist-avatar h-28 w-28 rounded-2xl overflow-hidden bg-neutral-700">
         <div data-controller="avatar-preview" class="avatar flex flex-col items-center gap-2">
           <div class="artist-avatar h-28 w-28 rounded-2xl overflow-hidden bg-neutral-700">
-            <!-- preview должен быть внутри контроллера -->
             <img data-avatar-preview-target="preview"
                  class="w-full h-full object-cover"
                  src="<%= @user.persisted? && @user.avatar.attached? && @user.avatar.blob&.persisted? ? url_for(@user.avatar) : asset_path('default-user.svg') %>" />
@@ -49,19 +47,16 @@
       <p class="text-xs text-neutral-500">Поддерживаемые форматы: PNG, JPG, WEBP</p>
     </div>
 
-    <!-- Имя пользователя -->
     <div class="form-group flex flex-col gap-1">
       <%= f.label :username, "Имя пользователя", class: "text-sm text-neutral-400" %>
       <%= f.text_field :username, class: "bg-neutral-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-500", placeholder: "Введите имя пользователя" %>
     </div>
 
-    <!-- Email -->
     <div class="form-group flex flex-col gap-1">
       <%= f.label :email, "Email", class: "text-sm text-neutral-400" %>
       <%= f.email_field :email, class: "bg-neutral-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-500", placeholder: "example@mail.com" %>
     </div>
 
-    <!-- Изменение пароля -->
     <div class="border-t border-neutral-700 pt-4 mt-2">
       <h3 class="text-lg font-semibold mb-3">Изменить пароль</h3>
 
@@ -76,14 +71,12 @@
       </div>
     </div>
 
-    <!-- Кнопки -->
     <div class="flex gap-3 mt-4">
       <%= f.submit "Сохранить изменения", class: "flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition cursor-pointer" %>
       <%= link_to "Отмена", profile_settings_path, class: "flex-1 bg-neutral-700 hover:bg-neutral-600 text-white font-bold py-2 px-4 rounded-lg transition text-center" %>
     </div>
   <% end %>
 
-  <!-- Удаление аккаунта -->
   <div class="p-6 pt-0 border-t border-neutral-700 mt-2">
     <div class="mt-4 pt-2">
       <%= button_to "Удалить аккаунт", user_registration_path, method: :delete,
