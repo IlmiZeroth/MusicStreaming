@@ -1,6 +1,15 @@
 <div data-controller="album-card"
-     class="album-card text-white bg-neutral-800 h-58 w-46 rounded-2xl flex flex-col justify-center items-center flex-shrink-0">
-
+     class="album-card relative text-white bg-neutral-800 h-58 w-46 rounded-2xl flex flex-col justify-center items-center flex-shrink-0">
+  <% if local_assigns[:show_actions] %>
+      <div class="delete-button absolute -top-2 -right-2 z-10 w-7 h-7 ">
+        <%= button_to album_path(album),
+                      method: :delete,
+                      class: "hover:cursor-pointer",
+                      data: { turbo_confirm: "Вы уверены, что хотите удалить альбом '#{album.name}'?" } do %>
+          <%= image_tag "delete.svg"%>
+        <% end %>
+    </div>
+  <% end %>
   <div class="cover-image relative bg-neutral-700 h-36 w-40 rounded-2xl flex-shrink-0">
     <%= link_to album_path(album), class: "block w-full h-full" do %>
       <% if album.cover_image&.attached? %>
@@ -9,6 +18,8 @@
         <%= image_tag 'default-music.svg', class: "w-[70%] h-[70%] ml-[14%] mt-[14%]" %>
       <% end %>
     <% end %>
+
+
 
     <div class="absolute inset-0 flex pl-2 pb-2 items-end rounded-2xl backdrop-blur-sm opacity-0 transition-opacity duration-300 hover:opacity-100 pointer-events-none">
       <%= image_tag "play.svg",

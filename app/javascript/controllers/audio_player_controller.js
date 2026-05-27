@@ -5,7 +5,6 @@ import WaveSurfer from "wavesurfer.js";
 export default class extends Controller {
     static targets = ["player", "waveform", "playButton", "currentTime", "duration", "volumeButton", "volumeSlider", "trackTitle", "trackArtist", "trackImage"];
     connect() {
-        console.log("WaveSurfer инициализирован!");
         if(this.wavesurfer) return;
         this.isPlaying = false;
         this.currentTrack = null;
@@ -14,7 +13,6 @@ export default class extends Controller {
         this.playButtonTarget.innerHTML = Icons.play;
         this.volumeButtonTarget.innerHTML = Icons.highSound;
 
-        // Инициализируем WaveSurfer с настройками
         this.wavesurfer = WaveSurfer.create({
             container: this.waveformTarget,
             waveColor: '#4F4A85',
@@ -29,10 +27,8 @@ export default class extends Controller {
         });
 
         const savedVolume = this.getSavedVolume();
-
-        // Настройка обработчиков событий
+        console.log("WaveSurfer connect")
         this.setupEventListeners();
-        // Устанавливаем начальную громкость
         this.setVolume(null, savedVolume);
         document.addEventListener('play-track', this.handlePlayTrack.bind(this));
     }
@@ -50,7 +46,6 @@ export default class extends Controller {
     }
 
     setupEventListeners() {
-        // При загрузке трека
         this.wavesurfer.on('ready', () => {
             const duration = this.wavesurfer.getDuration();
             this.durationTarget.textContent = this.formatTime(duration);
@@ -62,25 +57,21 @@ export default class extends Controller {
             }
         });
 
-        // Обновление времени при воспроизведении
         this.wavesurfer.on('audioprocess', () => {
             const currentTime = this.wavesurfer.getCurrentTime();
             this.currentTimeTarget.textContent = this.formatTime(currentTime);
         });
 
-        // При завершении трека
         this.wavesurfer.on('finish', () => {
             this.isPlaying = false;
             this.playButtonTarget.innerHTML = Icons.play;
         });
 
-        // При клике на волновую форму
         this.wavesurfer.on('interaction', () => {
             this.currentTimeTarget.textContent = this.formatTime(this.wavesurfer.getCurrentTime());
         });
     }
 
-    // Загрузка трека (вызывается извне)
     async loadTrack(trackId, trackUrl, trackName, trackArtist, trackImage) {
         if (this.wavesurfer) {
             this.currentTrack = {
@@ -112,7 +103,6 @@ export default class extends Controller {
             }
         }
 
-    // Play/Pause
     playPause() {
         if (!this.wavesurfer) return;
 
@@ -127,7 +117,6 @@ export default class extends Controller {
         }
     }
 
-    // Управление громкостью
     setVolume(event, volume) {
         if (this.wavesurfer) {
             if (event !== null) {
@@ -136,7 +125,7 @@ export default class extends Controller {
             this.saveVolume(volume);
             this.wavesurfer.setVolume(volume);
             this.volumeSliderTarget.value = volume * 100;
-            // Меняем иконку в зависимости от громкости
+
             if (volume === 0) {
                 this.volumeButtonTarget.innerHTML = Icons.offSound;
             } else if (volume < 0.3) {
@@ -147,7 +136,6 @@ export default class extends Controller {
         }
     }
 
-    // Mute/Unmute
     toggleMute() {
         if (this.wavesurfer) {
             const currentVolume = this.wavesurfer.getVolume();
@@ -162,7 +150,6 @@ export default class extends Controller {
         }
     }
 
-    // Форматирование времени
     formatTime(seconds) {
         if (isNaN(seconds)) return "0:00";
 
@@ -172,13 +159,11 @@ export default class extends Controller {
     }
 
     saveVolume(volume) {
-        console.log("Saved volume: " + volume)
         localStorage.setItem('audio-player-volume', volume);
     }
 
     getSavedVolume() {
         const saved = localStorage.getItem('audio-player-volume');
-        console.log("Get volume" + saved)
         if (saved !== null) {
             const volume = parseFloat(saved);
             if (!isNaN(volume) && volume >= 0 && volume <= 1) {
