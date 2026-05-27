@@ -28,6 +28,18 @@ class User < ApplicationRecord
   validates :username, presence: true, uniqueness: true, length: { minimum: 3, maximum: 50 }
   validates :description, length: { maximum: 500 }
 
+  def admin?
+    user_role == 2
+  end
+
+  def moderator?
+    user_role == 1
+  end
+
+  def user?
+    user_role == 0
+  end
+
   def total_streams
     tracks.joins(:album).where(albums: { user_id: id }).sum(:streams)
   end

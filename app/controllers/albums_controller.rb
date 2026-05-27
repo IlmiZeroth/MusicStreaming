@@ -1,6 +1,9 @@
 class AlbumsController < PagesController
   def show
     @album = Album.find(params[:id])
+    unless @album.present?
+      redirect_to root_path, alert: "Альбом не найден"
+    end
     @tracks = @album.tracks.order(number_in_album: :asc)
   end
   def create
