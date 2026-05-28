@@ -27,7 +27,6 @@ export default class extends Controller {
         });
 
         const savedVolume = this.getSavedVolume();
-        console.log("WaveSurfer connect")
         this.setupEventListeners();
         this.setVolume(null, savedVolume);
         document.addEventListener('play-track', this.handlePlayTrack.bind(this));
