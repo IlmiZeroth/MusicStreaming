@@ -12,11 +12,11 @@ export default class extends Controller {
         document.removeEventListener('like-button:changed', this.handleLikeChanged);
     }
 
-    playTrack(event){
-        if (event) {
-            event.preventDefault();
-            event.stopPropagation();
-        }
+    playTrack(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (!this.hasUrlValue || !this.urlValue) return;
 
         const playEvent = new CustomEvent('play-track', {
             detail: {

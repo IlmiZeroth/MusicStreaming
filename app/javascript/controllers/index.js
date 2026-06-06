@@ -19,5 +19,14 @@ application.register("studio", StudioController)
 import TrackCardController from "./track_card_controller"
 application.register("track-card", TrackCardController)
 
+import AlbumCardController from "./album_card_controller"
+application.register("album-card", AlbumCardController)
+
+import LikeButtonController from "./like_button_controller"
+application.register("like-button", LikeButtonController)
+
+import FollowButtonController from "./follow_button_controller"
+application.register("follow-button", FollowButtonController)
+
 import PreviewController from "./preview_controller"
 application.register("preview", PreviewController)

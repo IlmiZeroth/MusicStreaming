@@ -9,7 +9,18 @@ Rails.application.routes.draw do
   post "followers/:id", to: "followers#create", as: :follow
   delete "followers/:id", to: "followers#destroy", as: :unfollow
 
+  post "like_track/:id", to: "likes#like_track", as: :like_track
+  delete "like_track/:id", to: "likes#unlike_track", as: :unlike_track
+
+  post "like_album/:id", to: "likes#like_album", as: :like_album
+  delete "like_album/:id", to: "likes#unlike_album", as: :unlike_album
+
+  post "like_playlist/:id", to: "likes#like_playlist", as: :like_playlist
+  delete "like_playlist/:id", to: "likes#unlike_playlist", as: :unlike_playlist
+
   resources :pages, only: [:index]
+  resources :collection, only: [:index]
+  resources :playlists, only: [:create]
   resources :profile, only: [:show, :update] do
     get :settings
     patch :update_settings

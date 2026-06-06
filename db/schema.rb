@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_27_073040) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_05_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -48,6 +48,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_27_073040) do
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["album_id"], name: "index_album_likes_on_album_id"
+    t.index ["user_id", "album_id"], name: "index_album_likes_on_user_id_and_album_id", unique: true
     t.index ["user_id"], name: "index_album_likes_on_user_id"
   end
 
@@ -66,6 +67,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_27_073040) do
     t.integer "followed_id"
     t.integer "follower_id"
     t.datetime "updated_at", null: false
+    t.index ["follower_id", "followed_id"], name: "index_follows_on_follower_id_and_followed_id", unique: true
   end
 
   create_table "playlist_likes", force: :cascade do |t|
@@ -74,6 +76,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_27_073040) do
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["playlist_id"], name: "index_playlist_likes_on_playlist_id"
+    t.index ["user_id", "playlist_id"], name: "index_playlist_likes_on_user_id_and_playlist_id", unique: true
     t.index ["user_id"], name: "index_playlist_likes_on_user_id"
   end
 
@@ -102,6 +105,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_27_073040) do
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["track_id"], name: "index_track_likes_on_track_id"
+    t.index ["user_id", "track_id"], name: "index_track_likes_on_user_id_and_track_id", unique: true
     t.index ["user_id"], name: "index_track_likes_on_user_id"
   end
 
