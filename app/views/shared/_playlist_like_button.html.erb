@@ -1,0 +1,24 @@
+<% liked = current_user.liked_playlist?(playlist) %>
+<% button_class = local_assigns.fetch(:button_class, 'hover:cursor-pointer rounded-2xl bg-neutral-900 p-1 shadow-xl/50 hover:bg-neutral-600 transition-colors') %>
+<% icon_class = local_assigns.fetch(:icon_class, 'w-7 h-7') %>
+<% liked_title = 'Убрать из понравившихся плейлистов' %>
+<% unliked_title = 'Добавить в понравившиеся плейлисты' %>
+
+<%= button_tag type: 'button',
+               class: button_class,
+               title: liked ? liked_title : unliked_title,
+               data: {
+                 controller: 'like-button',
+                 action: 'click->like-button#toggle',
+                 like_button_resource_type_value: 'playlist',
+                 like_button_resource_id_value: playlist.id,
+                 like_button_like_url_value: like_playlist_path(playlist),
+                 like_button_unlike_url_value: unlike_playlist_path(playlist),
+                 like_button_liked_value: liked,
+                 like_button_liked_icon_value: asset_path('unfollow.svg'),
+                 like_button_unliked_icon_value: asset_path('follow.svg'),
+                 like_button_liked_title_value: liked_title,
+                 like_button_unliked_title_value: unliked_title
+               } do %>
+  <%= image_tag(liked ? 'unfollow.svg' : 'follow.svg', class: icon_class, data: { like_button_target: 'icon' }) %>
+<% end %>

@@ -32,9 +32,9 @@
           </div>
           <div class = "follow-button h-10 mt-3">
             <% if current_user != @user && !current_user.following?(@user) %>
-              <%= button_to "+ Подписаться", follow_path, method: :post, class: "bg-neutral-800 flex gap-2 justify-center items-center hover:text-neutral-300 hover:cursor-pointer border border-solid rounded-2xl border-green-400 pt-1 pb-1 ps-3 pe-3 text-white transition-colors duration-700" %>
+              <%= button_to "+ Подписаться", follow_path(@user), method: :post, class: "bg-neutral-800 flex gap-2 justify-center items-center hover:text-neutral-300 hover:cursor-pointer border border-solid rounded-2xl border-green-400 pt-1 pb-1 ps-3 pe-3 text-white transition-colors duration-700" %>
             <% elsif current_user != @user %>
-              <%= button_to "Вы подписаны", unfollow_path, method: :delete, class: "bg-green-400 flex gap-1 justify-center items-center text-black hover:text-neutral-300 hover:cursor-pointer border border-solid rounded-2xl border-green-400 pt-1 pb-1 ps-3 pe-3 transition-colors duration-700" %>
+              <%= button_to "Вы подписаны", unfollow_path(@user), method: :delete, class: "bg-green-400 flex gap-1 justify-center items-center text-black hover:text-neutral-300 hover:cursor-pointer border border-solid rounded-2xl border-green-400 pt-1 pb-1 ps-3 pe-3 transition-colors duration-700" %>
             <% else %>
               <div class = "justify-center items-center text-neutral-300 pt-1 pb-1 ps-3 pe-3"> Это ваш профиль </div>
             <% end %>

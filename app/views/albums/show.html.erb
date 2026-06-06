@@ -22,11 +22,14 @@
         <div class = "streams text-white bg-neutral-800 ps-3 pe-3 rounded-2xl"><%= number_with_delimiter @album.total_streams %> слушателя в месяц</div>
         <div class = "tracks-count text-white bg-neutral-800 ps-3 pe-3 rounded-2xl"> <%= number_with_delimiter @album.tracks_count %> треков </div>
       </div>
-      <div class = "control-buttons flex gap-10">
+      <div class = "control-buttons flex gap-3 items-center">
         <div class = "listen-button h-10 mt-3">
           <button class = "bg-green-400 flex gap-2 justify-center items-center hover:text-gray-700 hover:cursor-pointer border border-solid rounded-2xl border-green-400 pt-1 pb-1 ps-3 pe-3 text-black">
             <%= image_tag "play.svg", class: "w-5 h-5"%> Слушать
           </button>
+        </div>
+        <div class="like-album-button h-10 mt-3 flex items-center">
+          <%= render 'shared/album_like_button', album: @album %>
         </div>
       </div>
     </div>

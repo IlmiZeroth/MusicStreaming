@@ -1,0 +1,39 @@
+<div data-controller="artist-card"
+     class="artist-card relative text-white bg-neutral-800 h-58 w-46 rounded-2xl flex flex-col justify-center items-center flex-shrink-0 transition duration-200">
+  <div class="cover-image group relative bg-neutral-700 h-36 w-40 rounded-2xl flex-shrink-0 overflow-hidden">
+    <%= link_to profile_path(artist), class: "block w-full h-full" do %>
+      <% if artist.avatar&.attached? %>
+        <%= image_tag artist.avatar, class: "w-full h-full object-cover rounded-2xl" %>
+      <% else %>
+        <%= image_tag 'default-user.svg', class: "w-[70%] h-[70%] ml-[14%] mt-[14%]" %>
+      <% end %>
+    <% end %>
+
+    <% if local_assigns[:show_actions] && current_user != artist %>
+      <% following = current_user.following?(artist) %>
+      <%= button_tag type: "button",
+                     class: "absolute top-2 right-2 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-neutral-900/90 shadow-xl hover:bg-neutral-700 transition-colors hover:cursor-pointer",
+                     title: following ? "Убрать артиста из коллекции" : "Добавить артиста в коллекцию",
+                     data: {
+                       controller: "follow-button",
+                       action: "click->follow-button#toggle",
+                       follow_button_follow_url_value: follow_path(artist),
+                       follow_button_unfollow_url_value: unfollow_path(artist, from: 'collection'),
+                       follow_button_followed_id_value: artist.id,
+                       follow_button_following_value: following,
+                       follow_button_followed_icon_value: asset_path('unfollow.svg'),
+                       follow_button_unfollowed_icon_value: asset_path('follow.svg'),
+                       follow_button_follow_title_value: "Добавить артиста в коллекцию",
+                       follow_button_unfollow_title_value: "Убрать артиста из коллекции",
+                       follow_button_remove_on_unfollow_value: true,
+                       turbo: false
+                     } do %>
+        <%= image_tag(following ? 'unfollow.svg' : 'follow.svg', class: 'w-6 h-6', data: { follow_button_target: 'icon' }) %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <div class="artist-name mt-2 truncate w-40">
+    <%= link_to artist.username, profile_path(artist), class: "hover:underline" %>
+  </div>
+</div>
