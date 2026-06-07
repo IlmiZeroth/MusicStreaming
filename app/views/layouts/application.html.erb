@@ -21,7 +21,7 @@
     <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
   </head>
 
-  <body class="flex bg-neutral-900 flex-col">
+  <body class="flex bg-neutral-900 flex-col" data-controller="navigation-history">
   <% if notice %>
     <p data-controller="notification" data-notification-delay-value="3000" class="notice text-white bg-neutral-800 w-100 h-13 rounded-md
       pl-6 pt-3 mt-3 ml-3 border-2 border-yellow-200 border-solid absolute z-50"><%= notice %></p>

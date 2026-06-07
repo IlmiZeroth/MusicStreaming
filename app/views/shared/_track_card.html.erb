@@ -11,8 +11,10 @@
      data-track-card-liked-value="<%= liked %>"
      data-track-card-like-url-value="<%= like_track_path(track) %>"
      data-track-card-unlike-url-value="<%= unlike_track_path(track) %>"
-     class="track-card relative text-white bg-neutral-800 h-58 w-46 rounded-2xl flex flex-col justify-center items-center flex-shrink-0 overflow-hidden">
-  <div class="cover-image group relative bg-neutral-700 h-36 w-40 rounded-2xl flex-shrink-0 hover:cursor-pointer">
+     data-track-card-play-icon-value="<%= asset_path('play.svg') %>"
+     data-track-card-pause-icon-value="<%= asset_path('pause.svg') %>"
+     class="track-card relative text-white bg-neutral-800 h-58 w-46 rounded-2xl flex flex-col justify-center items-center flex-shrink-0 overflow-hidden transition-all duration-200">
+  <div class="cover-image group relative bg-neutral-700 h-36 w-40 rounded-2xl flex-shrink-0 hover:cursor-pointer transition-all duration-200" data-track-card-target="artwork">
     <% if track.album.cover_image&.attached? %>
       <%= image_tag track.album.cover_image, class: "w-full h-full object-cover rounded-2xl" %>
     <% else %>
@@ -24,7 +26,7 @@
               data-action="click->track-card#playTrack"
               class="pointer-events-auto hover:cursor-pointer rounded-full bg-neutral-900/90 p-1.5 hover:bg-neutral-700 transition-colors"
               title="Воспроизвести">
-        <%= image_tag "play.svg", class: "w-8 h-8" %>
+        <%= image_tag "play.svg", class: "w-8 h-8", data: { track_card_target: "playIcon" } %>
       </button>
 
       <% if local_assigns.fetch(:show_like, true) %>

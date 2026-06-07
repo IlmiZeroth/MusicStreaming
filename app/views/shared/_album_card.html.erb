@@ -1,4 +1,6 @@
-<% first_track = album.tracks.first %>
+<% album_tracks = album.tracks.order(number_in_album: :asc) %>
+<% album_queue = player_tracks_payload(album_tracks) %>
+<% first_track = album_tracks.first %>
 <% first_track_audio_url = first_track&.audio_file&.attached? ? url_for(first_track.audio_file) : '' %>
 <% album_image_url = album.cover_image.attached? ? url_for(album.cover_image) : asset_path('default-music.svg') %>
 <% first_track_liked = first_track.present? ? current_user.liked_track?(first_track) : false %>
@@ -12,7 +14,13 @@
      data-album-card-liked-value="<%= first_track_liked %>"
      data-album-card-like-url-value="<%= like_track_path(first_track) if first_track.present? %>"
      data-album-card-unlike-url-value="<%= unlike_track_path(first_track) if first_track.present? %>"
-     class="album-card relative text-white bg-neutral-800 h-58 w-46 rounded-2xl flex flex-col justify-center items-center flex-shrink-0 overflow-hidden">
+     data-album-card-queue-name-value="Альбом: <%= album.name %>"
+     data-album-card-queue-value="<%= album_queue.to_json %>"
+     data-album-card-context-type-value="album"
+     data-album-card-context-id-value="<%= album.id %>"
+     data-album-card-play-icon-value="<%= asset_path('play.svg') %>"
+     data-album-card-pause-icon-value="<%= asset_path('pause.svg') %>"
+     class="album-card relative text-white bg-neutral-800 h-58 w-46 rounded-2xl flex flex-col justify-center items-center flex-shrink-0 overflow-hidden transition-all duration-200">
   <% if local_assigns[:show_actions] %>
     <div class="delete-button absolute top-2 right-2 z-20 w-7 h-7">
       <%= button_to album_path(album),
@@ -24,7 +32,7 @@
     </div>
   <% end %>
 
-  <div class="cover-image group relative bg-neutral-700 h-36 w-40 rounded-2xl flex-shrink-0">
+  <div class="cover-image group relative bg-neutral-700 h-36 w-40 rounded-2xl flex-shrink-0 transition-all duration-200" data-album-card-target="artwork">
     <%= link_to album_path(album), class: "block w-full h-full" do %>
       <% if album.cover_image&.attached? %>
         <%= image_tag album.cover_image, class: "w-full h-full object-cover rounded-2xl" %>
@@ -36,9 +44,10 @@
     <div class="absolute inset-0 flex items-end justify-between rounded-2xl bg-black/20 backdrop-blur-sm opacity-0 transition-opacity duration-300 group-hover:opacity-100 p-3 pointer-events-none">
       <button type="button"
               data-action="click->album-card#playTrack"
-              class="pointer-events-auto hover:cursor-pointer rounded-full bg-neutral-900/90 p-1.5 hover:bg-neutral-700 transition-colors"
-              title="Воспроизвести первый трек">
-        <%= image_tag "play.svg", class: "w-8 h-8" %>
+              class="pointer-events-auto hover:cursor-pointer rounded-full bg-neutral-900/90 p-1.5 hover:bg-neutral-700 transition-colors disabled:opacity-40 disabled:cursor-default"
+              title="Воспроизвести альбом с первого трека"
+              <%= 'disabled' unless first_track.present? && first_track_audio_url.present? %>>
+        <%= image_tag "play.svg", class: "w-8 h-8", data: { album_card_target: "playIcon" } %>
       </button>
 
       <% if local_assigns.fetch(:show_like, true) %>

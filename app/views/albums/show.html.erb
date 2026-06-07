@@ -1,10 +1,18 @@
 <%= render "shared/header" %>
-<div class = "album-page">
+<% album_queue = player_tracks_payload(@tracks) %>
+<% first_album_track = album_queue.first %>
+<div class = "album-page mb-40">
   <div class = "album-info flex gap-3 pl-3 mt-3 pb-5 border-b border-solid border-b-neutral-800">
     <div class = "return text-neutral-400 w-8 h-8">
-      <%= link_to :back do %>
+      <button type="button"
+              data-controller="smart-back"
+              data-action="smart-back#goBack"
+              data-smart-back-fallback-url-value="<%= profile_path(@user) %>"
+              class="w-8 h-8 hover:opacity-80 disabled:opacity-40 disabled:cursor-default transition-opacity"
+              title="Назад"
+              aria-label="Назад">
         <%= image_tag 'left.svg' %>
-      <% end %>
+      </button>
     </div>
     <div class = "album-cover h-40 w-40">
       <% if @album.cover_image.attached? %>
@@ -24,9 +32,34 @@
       </div>
       <div class = "control-buttons flex gap-3 items-center">
         <div class = "listen-button h-10 mt-3">
-          <button class = "bg-green-400 flex gap-2 justify-center items-center hover:text-gray-700 hover:cursor-pointer border border-solid rounded-2xl border-green-400 pt-1 pb-1 ps-3 pe-3 text-black">
-            <%= image_tag "play.svg", class: "w-5 h-5"%> Слушать
-          </button>
+          <% if first_album_track.present? %>
+            <button type="button"
+                    data-controller="album-card"
+                    data-action="click->album-card#playTrack"
+                    data-album-card-id-value="<%= first_album_track[:id] %>"
+                    data-album-card-artist-value="<%= first_album_track[:artist] %>"
+                    data-album-card-name-value="<%= first_album_track[:name] %>"
+                    data-album-card-url-value="<%= first_album_track[:url] %>"
+                    data-album-card-image-value="<%= first_album_track[:image] %>"
+                    data-album-card-liked-value="<%= first_album_track[:liked] %>"
+                    data-album-card-like-url-value="<%= first_album_track[:likeUrl] %>"
+                    data-album-card-unlike-url-value="<%= first_album_track[:unlikeUrl] %>"
+                    data-album-card-queue-name-value="Альбом: <%= @album.name %>"
+                    data-album-card-queue-value="<%= album_queue.to_json %>"
+                    data-album-card-context-type-value="album"
+                    data-album-card-context-id-value="<%= @album.id %>"
+                    data-album-card-play-icon-value="<%= asset_path('play.svg') %>"
+                    data-album-card-pause-icon-value="<%= asset_path('pause.svg') %>"
+                    class = "bg-green-400 flex gap-2 justify-center items-center hover:text-gray-700 hover:cursor-pointer border border-solid rounded-2xl border-green-400 pt-1 pb-1 ps-3 pe-3 text-black">
+              <%= image_tag "play.svg", class: "w-5 h-5", data: { album_card_target: "playIcon" } %> Слушать
+            </button>
+          <% else %>
+            <button type="button"
+                    disabled
+                    class = "bg-neutral-700 flex gap-2 justify-center items-center border border-solid rounded-2xl border-neutral-700 pt-1 pb-1 ps-3 pe-3 text-neutral-400 cursor-not-allowed">
+              <%= image_tag "play.svg", class: "w-5 h-5 opacity-50"%> Слушать
+            </button>
+          <% end %>
         </div>
         <div class="like-album-button h-10 mt-3 flex items-center">
           <%= render 'shared/album_like_button', album: @album %>
@@ -35,7 +68,7 @@
     </div>
   </div>
   <div class = "album-content">
-    <div class = "tracks flex flex-col gap-5 mt-3 pb-1 overflow-x-auto">
+    <div class = "tracks flex flex-col gap-5 mt-3 py-1 overflow-visible" data-playback-queue-name-value="Альбом: <%= @album.name %>" data-playback-context-type-value="album" data-playback-context-id-value="<%= @album.id %>">
       <% @tracks.each do |track| %>
         <%= render "shared/track", track: track%>
       <% end %>

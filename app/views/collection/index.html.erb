@@ -25,13 +25,23 @@
       <% end %>
     </div>
 
-    <section class="following section">
-      <div class="flex items-end justify-between gap-3">
-        <h2 class="text-2xl">Любимые артисты</h2>
-        <span class="text-neutral-400" data-collection-count="artists"><%= @artists.size %></span>
+    <section class="following section" data-controller="horizontal-scroll">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-end gap-3">
+          <h2 class="text-2xl">Любимые артисты</h2>
+          <span class="text-neutral-400" data-collection-count="artists"><%= @artists.size %></span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" data-action="horizontal-scroll#scrollPrevious" data-horizontal-scroll-target="previousButton" class="rounded-full bg-neutral-800/90 p-1.5 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-default transition-colors" title="Назад">
+            <%= image_tag 'left.svg', class: 'w-5 h-5' %>
+          </button>
+          <button type="button" data-action="horizontal-scroll#scrollNext" data-horizontal-scroll-target="nextButton" class="rounded-full bg-neutral-800/90 p-1.5 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-default transition-colors" title="Вперёд">
+            <%= image_tag 'right.svg', class: 'w-5 h-5' %>
+          </button>
+        </div>
       </div>
       <% if @artists.present? %>
-        <div class="flex flex-row gap-5 mt-3 pb-1 overflow-x-auto" data-collection-list="artists">
+        <div class="flex flex-row gap-5 mt-3 py-1 px-1 overflow-x-auto" data-collection-list="artists" data-horizontal-scroll-target="scroller" data-action="wheel->horizontal-scroll#scrollByWheel scroll->horizontal-scroll#updateButtons">
           <% @artists.each do |artist| %>
             <%= render 'shared/artist_card', artist: artist, show_actions: true %>
           <% end %>
@@ -48,7 +58,7 @@
         <span class="text-neutral-400"><%= @liked_tracks.size %></span>
       </div>
       <% if @liked_tracks.present? %>
-        <div class="tracks flex flex-col gap-3 mt-3 pb-1">
+        <div class="tracks flex flex-col gap-3 mt-3 py-1 overflow-visible" data-playback-queue-name-value="Понравившиеся треки">
           <% @liked_tracks.each do |track| %>
             <%= render 'shared/track', track: track, show_actions: false, show_like: true %>
           <% end %>
@@ -58,13 +68,23 @@
       <% end %>
     </section>
 
-    <section class="liked-albums section">
-      <div class="flex items-end justify-between gap-3">
-        <h2 class="text-2xl">Любимые альбомы</h2>
-        <span class="text-neutral-400"><%= @liked_albums.size %></span>
+    <section class="liked-albums section" data-controller="horizontal-scroll">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-end gap-3">
+          <h2 class="text-2xl">Любимые альбомы</h2>
+          <span class="text-neutral-400"><%= @liked_albums.size %></span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" data-action="horizontal-scroll#scrollPrevious" data-horizontal-scroll-target="previousButton" class="rounded-full bg-neutral-800/90 p-1.5 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-default transition-colors" title="Назад">
+            <%= image_tag 'left.svg', class: 'w-5 h-5' %>
+          </button>
+          <button type="button" data-action="horizontal-scroll#scrollNext" data-horizontal-scroll-target="nextButton" class="rounded-full bg-neutral-800/90 p-1.5 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-default transition-colors" title="Вперёд">
+            <%= image_tag 'right.svg', class: 'w-5 h-5' %>
+          </button>
+        </div>
       </div>
       <% if @liked_albums.present? %>
-        <div class="flex flex-row gap-5 mt-3 pb-1 overflow-x-auto">
+        <div class="flex flex-row gap-5 mt-3 py-1 px-1 overflow-x-auto" data-horizontal-scroll-target="scroller" data-action="wheel->horizontal-scroll#scrollByWheel scroll->horizontal-scroll#updateButtons">
           <% @liked_albums.each do |album| %>
             <%= render 'shared/album_card', album: album, show_like: true %>
           <% end %>
@@ -74,13 +94,23 @@
       <% end %>
     </section>
 
-    <section class="created-playlists section">
-      <div class="flex items-end justify-between gap-3">
-        <h2 class="text-2xl">Мои плейлисты</h2>
-        <span class="text-neutral-400"><%= @created_playlists.size %></span>
+    <section class="created-playlists section" data-controller="horizontal-scroll">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-end gap-3">
+          <h2 class="text-2xl">Мои плейлисты</h2>
+          <span class="text-neutral-400"><%= @created_playlists.size %></span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" data-action="horizontal-scroll#scrollPrevious" data-horizontal-scroll-target="previousButton" class="rounded-full bg-neutral-800/90 p-1.5 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-default transition-colors" title="Назад">
+            <%= image_tag 'left.svg', class: 'w-5 h-5' %>
+          </button>
+          <button type="button" data-action="horizontal-scroll#scrollNext" data-horizontal-scroll-target="nextButton" class="rounded-full bg-neutral-800/90 p-1.5 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-default transition-colors" title="Вперёд">
+            <%= image_tag 'right.svg', class: 'w-5 h-5' %>
+          </button>
+        </div>
       </div>
       <% if @created_playlists.present? %>
-        <div class="flex flex-row gap-5 mt-3 pb-1 overflow-x-auto">
+        <div class="flex flex-row gap-5 mt-3 py-1 px-1 overflow-x-auto" data-horizontal-scroll-target="scroller" data-action="wheel->horizontal-scroll#scrollByWheel scroll->horizontal-scroll#updateButtons">
           <% @created_playlists.each do |playlist| %>
             <%= render 'shared/playlist_card', playlist: playlist, show_like: false %>
           <% end %>
@@ -90,13 +120,23 @@
       <% end %>
     </section>
 
-    <section class="liked-playlists section">
-      <div class="flex items-end justify-between gap-3">
-        <h2 class="text-2xl">Понравившиеся плейлисты</h2>
-        <span class="text-neutral-400"><%= @liked_playlists.size %></span>
+    <section class="liked-playlists section" data-controller="horizontal-scroll">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-end gap-3">
+          <h2 class="text-2xl">Понравившиеся плейлисты</h2>
+          <span class="text-neutral-400"><%= @liked_playlists.size %></span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" data-action="horizontal-scroll#scrollPrevious" data-horizontal-scroll-target="previousButton" class="rounded-full bg-neutral-800/90 p-1.5 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-default transition-colors" title="Назад">
+            <%= image_tag 'left.svg', class: 'w-5 h-5' %>
+          </button>
+          <button type="button" data-action="horizontal-scroll#scrollNext" data-horizontal-scroll-target="nextButton" class="rounded-full bg-neutral-800/90 p-1.5 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-default transition-colors" title="Вперёд">
+            <%= image_tag 'right.svg', class: 'w-5 h-5' %>
+          </button>
+        </div>
       </div>
       <% if @liked_playlists.present? %>
-        <div class="flex flex-row gap-5 mt-3 pb-1 overflow-x-auto">
+        <div class="flex flex-row gap-5 mt-3 py-1 px-1 overflow-x-auto" data-horizontal-scroll-target="scroller" data-action="wheel->horizontal-scroll#scrollByWheel scroll->horizontal-scroll#updateButtons">
           <% @liked_playlists.each do |playlist| %>
             <%= render 'shared/playlist_card', playlist: playlist, show_like: true %>
           <% end %>

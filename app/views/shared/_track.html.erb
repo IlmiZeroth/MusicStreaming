@@ -3,6 +3,7 @@
 <% liked = current_user.liked_track?(track) %>
 
 <div data-controller="track-card"
+     data-track-card-target="active"
      data-track-card-id-value="<%= track.id %>"
      data-track-card-artist-value="<%= track.user.username %>"
      data-track-card-name-value="<%= track.name %>"
@@ -11,9 +12,11 @@
      data-track-card-liked-value="<%= liked %>"
      data-track-card-like-url-value="<%= like_track_path(track) %>"
      data-track-card-unlike-url-value="<%= unlike_track_path(track) %>"
-     class="track-card text-white bg-neutral-800 h-13 ml-10 mr-10 pl-2 pr-5 rounded-2xl flex items-center flex-row flex-shrink-0">
-  <button type="button" data-action="click->track-card#playTrack" class="hover:cursor-pointer">
-    <%= image_tag "play.svg", class: "w-7 h-7" %>
+     data-track-card-play-icon-value="<%= asset_path('play.svg') %>"
+     data-track-card-pause-icon-value="<%= asset_path('pause.svg') %>"
+     class="track-card text-white bg-neutral-800 h-13 ml-10 mr-10 my-0.5 pl-2 pr-5 rounded-2xl flex items-center flex-row flex-shrink-0 transition-all duration-200">
+  <button type="button" data-action="click->track-card#playTrack" data-track-card-target="artwork" class="h-9 w-9 flex items-center justify-center hover:cursor-pointer rounded-full hover:bg-neutral-700 transition-all duration-200">
+    <%= image_tag "play.svg", class: "w-7 h-7", data: { track_card_target: "playIcon" } %>
   </button>
   <div class="track-info flex flex-col truncate w-full ml-2 mr-2">
     <div class="track-name text-white"><%= track.name %></div>

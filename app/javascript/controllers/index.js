@@ -28,5 +28,14 @@ application.register("like-button", LikeButtonController)
 import FollowButtonController from "./follow_button_controller"
 application.register("follow-button", FollowButtonController)
 
+import HorizontalScrollController from "./horizontal_scroll_controller"
+application.register("horizontal-scroll", HorizontalScrollController)
+
+import NavigationHistoryController from "./navigation_history_controller"
+application.register("navigation-history", NavigationHistoryController)
+
+import SmartBackController from "./smart_back_controller"
+application.register("smart-back", SmartBackController)
+
 import PreviewController from "./preview_controller"
 application.register("preview", PreviewController)

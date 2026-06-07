@@ -1,37 +1,18 @@
 module ApplicationHelper
-  def auth_links
-    if user_signed_in?
-      button_to("Выйти", destroy_user_session_path, method: :delete)
-    else
-      link_to("Войти", new_user_session_path)
-    end
+  def player_track_payload(track)
+    {
+      id: track.id.to_s,
+      url: track.audio_file.attached? ? url_for(track.audio_file) : '',
+      name: track.name,
+      artist: track.user.username,
+      image: track.album.cover_image.attached? ? url_for(track.album.cover_image) : asset_path('default-music.svg'),
+      liked: current_user.liked_track?(track),
+      likeUrl: like_track_path(track),
+      unlikeUrl: unlike_track_path(track)
+    }
   end
 
-  # Мусор, который я зачем-то решил добавить под пьянным угаром и сейчас понял, что это мне не нужно
-  # def show_svg(path, width: nil, height: nil, fill: nil)
-  #   svg_content = File.open("app/assets/images/#{path}", "rb") do |file|
-  #     file.read
-  #   end
-  #
-  #   # Удаляем XML декларацию и комментарии
-  #   svg_content = svg_content.gsub(/<\?xml.*?\?>/, '')
-  #   svg_content = svg_content.gsub(/<!--.*?-->/, '')
-  #
-  #   # Удаляем старые атрибуты и вставляем новые
-  #   svg_content = svg_content.gsub(/width="[^"]*"/, '')
-  #   svg_content = svg_content.gsub(/height="[^"]*"/, '')
-  #   svg_content = svg_content.gsub(/fill="[^"]*"/, '')
-  #
-  #   # Вставляем новые атрибуты
-  #   attrs = []
-  #   attrs << "width=\"#{width}\"" if width
-  #   attrs << "height=\"#{height}\"" if height
-  #   attrs << "fill=\"#{fill}\"" if fill
-  #
-  #   if attrs.any?
-  #     svg_content = svg_content.gsub(/<svg /, "<svg #{attrs.join(' ')} ")
-  #   end
-  #
-  #   raw svg_content
-  # end
+  def player_tracks_payload(tracks)
+    tracks.map { |track| player_track_payload(track) }
+  end
 end

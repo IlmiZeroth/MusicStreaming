@@ -1,17 +1,37 @@
 <%= render "shared/header" %>
 <div class = "page">
   <div class = "page-container text-white flex flex-col gap-5 mb-40">
-    <div class = "section ml-5 mr-5 mt-5">
-      <h2 class = "text-2xl">Популярные треки</h2>
-      <div class = "tracks flex flex-row gap-5 mt-3 pb-1 overflow-x-auto">
+    <div class = "section ml-5 mr-5 mt-5" data-controller="horizontal-scroll" data-playback-queue-name-value="Популярные треки">
+      <div class="flex items-center justify-between gap-3">
+        <h2 class = "text-2xl">Популярные треки</h2>
+        <div class="flex items-center gap-2">
+          <button type="button" data-action="horizontal-scroll#scrollPrevious" data-horizontal-scroll-target="previousButton" class="rounded-full bg-neutral-800/90 p-1.5 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-default transition-colors" title="Назад">
+            <%= image_tag 'left.svg', class: 'w-5 h-5' %>
+          </button>
+          <button type="button" data-action="horizontal-scroll#scrollNext" data-horizontal-scroll-target="nextButton" class="rounded-full bg-neutral-800/90 p-1.5 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-default transition-colors" title="Вперёд">
+            <%= image_tag 'right.svg', class: 'w-5 h-5' %>
+          </button>
+        </div>
+      </div>
+      <div class = "tracks flex flex-row gap-5 mt-3 py-1 px-1 overflow-x-auto" data-horizontal-scroll-target="scroller" data-action="wheel->horizontal-scroll#scrollByWheel scroll->horizontal-scroll#updateButtons">
         <% @popular_tracks.each do |track| %>
           <%= render 'shared/track_card', track: track %>
         <% end %>
       </div>
     </div>
-    <div class = "section ml-5 mr-5 mt-5">
-      <h2 class = "text-2xl">Новинки</h2>
-      <div class = "tracks flex flex-row gap-5 mt-3 pb-1 overflow-x-auto">
+    <div class = "section ml-5 mr-5 mt-5" data-controller="horizontal-scroll" data-playback-queue-name-value="Новинки">
+      <div class="flex items-center justify-between gap-3">
+        <h2 class = "text-2xl">Новинки</h2>
+        <div class="flex items-center gap-2">
+          <button type="button" data-action="horizontal-scroll#scrollPrevious" data-horizontal-scroll-target="previousButton" class="rounded-full bg-neutral-800/90 p-1.5 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-default transition-colors" title="Назад">
+            <%= image_tag 'left.svg', class: 'w-5 h-5' %>
+          </button>
+          <button type="button" data-action="horizontal-scroll#scrollNext" data-horizontal-scroll-target="nextButton" class="rounded-full bg-neutral-800/90 p-1.5 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-default transition-colors" title="Вперёд">
+            <%= image_tag 'right.svg', class: 'w-5 h-5' %>
+          </button>
+        </div>
+      </div>
+      <div class = "tracks flex flex-row gap-5 mt-3 py-1 px-1 overflow-x-auto" data-horizontal-scroll-target="scroller" data-action="wheel->horizontal-scroll#scrollByWheel scroll->horizontal-scroll#updateButtons">
         <% @new_releases.each do |track| %>
           <%= render 'shared/track_card', track: track %>
         <% end %>
