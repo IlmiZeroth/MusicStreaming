@@ -1,7 +1,8 @@
 <% album_tracks = album.tracks.order(number_in_album: :asc) %>
 <% album_queue = player_tracks_payload(album_tracks) %>
 <% first_track = album_tracks.first %>
-<% first_track_audio_url = first_track&.audio_file&.attached? ? url_for(first_track.audio_file) : '' %>
+<% first_track_audio_url = first_track&.audio_file&.attached? ? audio_track_path(first_track) : '' %>
+<% first_track_metadata_url = first_track&.audio_file&.attached? ? metadata_track_path(first_track) : '' %>
 <% album_image_url = album.cover_image.attached? ? url_for(album.cover_image) : asset_path('default-music.svg') %>
 <% first_track_liked = first_track.present? ? current_user.liked_track?(first_track) : false %>
 
@@ -10,6 +11,8 @@
      data-album-card-artist-value="<%= album.user.username %>"
      data-album-card-name-value="<%= first_track&.name || album.name %>"
      data-album-card-url-value="<%= first_track_audio_url %>"
+     data-album-card-metadata-url-value="<%= first_track_metadata_url %>"
+     data-album-card-duration-value="<%= first_track&.duration %>"
      data-album-card-image-value="<%= album_image_url %>"
      data-album-card-liked-value="<%= first_track_liked %>"
      data-album-card-like-url-value="<%= like_track_path(first_track) if first_track.present? %>"
@@ -18,6 +21,7 @@
      data-album-card-queue-value="<%= album_queue.to_json %>"
      data-album-card-context-type-value="album"
      data-album-card-context-id-value="<%= album.id %>"
+     data-album-card-context-url-value="<%= album_path(album) %>"
      data-album-card-play-icon-value="<%= asset_path('play.svg') %>"
      data-album-card-pause-icon-value="<%= asset_path('pause.svg') %>"
      class="album-card relative text-white bg-neutral-800 h-58 w-46 rounded-2xl flex flex-col justify-center items-center flex-shrink-0 overflow-hidden transition-all duration-200">
@@ -33,13 +37,13 @@
   <% end %>
 
   <div class="cover-image group relative bg-neutral-700 h-36 w-40 rounded-2xl flex-shrink-0 transition-all duration-200" data-album-card-target="artwork">
-    <%= link_to album_path(album), class: "block w-full h-full" do %>
+    <a href="<%= album_path(album) %>" class="block w-full h-full" title="<%= album.name %>">
       <% if album.cover_image&.attached? %>
-        <%= image_tag album.cover_image, class: "w-full h-full object-cover rounded-2xl" %>
+        <%= image_tag album.cover_image, class: "w-full h-full object-cover rounded-2xl", alt: album.name %>
       <% else %>
-        <%= image_tag 'default-music.svg', class: "w-[70%] h-[70%] ml-[14%] mt-[14%]" %>
+        <%= image_tag 'default-music.svg', class: "w-[70%] h-[70%] ml-[14%] mt-[14%]", alt: album.name %>
       <% end %>
-    <% end %>
+    </a>
 
     <div class="absolute inset-0 flex items-end justify-between rounded-2xl bg-black/20 backdrop-blur-sm opacity-0 transition-opacity duration-300 group-hover:opacity-100 p-3 pointer-events-none">
       <button type="button"
@@ -59,11 +63,11 @@
     </div>
   </div>
 
-  <div class="album-name mt-2 truncate w-40">
+  <div class="album-name mt-2 truncate w-40" title="<%= album.name %>">
     <%= link_to album.name, album_path(album), class: "hover:underline" %>
   </div>
 
-  <div class="album-artist text-neutral-400 truncate w-40 hover:text-gray-400">
+  <div class="album-artist text-neutral-400 truncate w-40 hover:text-gray-400" title="<%= album.user.username %>">
     <%= link_to album.user.username, profile_path(album.user.id) %>
   </div>
 </div>

@@ -1,6 +1,5 @@
 import { Controller } from "@hotwired/stimulus";
 import { Icons } from "./icons";
-import WaveSurfer from "wavesurfer.js";
 
 export default class extends Controller {
     static targets = [
@@ -34,11 +33,16 @@ export default class extends Controller {
     };
 
     connect() {
-        if(this.wavesurfer) {
+        this.metadataCache ||= new Map();
+        this.metadataRequests ||= new Map();
+
+        if (this.audioElement) {
             this.attachDocumentListeners();
             this.updateLikeButton();
             this.updateQueueControls();
+            this.updatePlayButton();
             this.broadcastPlaybackState();
+            this.drawWaveform();
             return;
         }
 
@@ -46,30 +50,34 @@ export default class extends Controller {
         this.currentTrack = null;
         this.currentQueue = [];
         this.currentQueueName = '';
+        this.currentQueueUrl = null;
         this.currentQueueIndex = 0;
         this.currentContextType = null;
         this.currentContextId = null;
         this.isAppeared = false;
         this.currentLoadToken = null;
+        this.handledFinishToken = null;
+        this.isAdvancingAfterFinish = false;
+        this.lastAutoAdvanceAt = 0;
+        this.waveformData = null;
+        this.waveformDuration = null;
+        this.metadataCache = new Map();
+        this.metadataRequests = new Map();
 
-        this.playButtonTarget.innerHTML = Icons.play;
+        this.updatePlayButton();
         this.volumeButtonTarget.innerHTML = Icons.highSound;
+        this.volumeButtonTarget.title = 'Выключить звук';
+        this.volumeButtonTarget.setAttribute('aria-label', 'Выключить звук');
 
-        this.wavesurfer = WaveSurfer.create({
-            container: this.waveformTarget,
-            waveColor: '#4F4A85',
-            progressColor: '#383351',
-            cursorColor: '#7C6E9E',
-            barWidth: 1,
-            barRadius: 3,
-            cursorWidth: 1,
-            height: 100,
-            normalize: true,
-            responsive: true,
-        });
+        // Only the native HTML5 audio element receives the audio URL.
+        // This preserves normal browser Range-request streaming. The waveform is
+        // rendered separately from JSON peaks and never fetches the audio file.
+        this.audioElement = new Audio();
+        this.audioElement.preload = 'metadata';
+        this.setupNativeAudioListeners();
+        this.setupWaveformRenderer();
 
         const savedVolume = this.getSavedVolume();
-        this.setupEventListeners();
         this.setVolume(null, savedVolume);
 
         this.attachDocumentListeners();
@@ -97,6 +105,67 @@ export default class extends Controller {
         document.removeEventListener('play-queue', this.handlePlayQueueEvent);
         document.removeEventListener('like-button:changed', this.handleLikeChangedEvent);
         this.documentListenersAttached = false;
+    }
+
+    setupNativeAudioListeners() {
+        if (!this.audioElement || this.nativeAudioListenersAttached) return;
+
+        this.audioElement.addEventListener('loadedmetadata', () => this.updateDurationFromMedia());
+        this.audioElement.addEventListener('durationchange', () => this.updateDurationFromMedia());
+        this.audioElement.addEventListener('canplay', () => this.updateDurationFromMedia());
+        this.audioElement.addEventListener('timeupdate', () => this.updateCurrentTimeFromMedia());
+
+        this.audioElement.addEventListener('play', () => {
+            this.isPlaying = true;
+            this.updatePlayButton();
+            this.broadcastPlaybackState();
+        });
+
+        this.audioElement.addEventListener('pause', () => {
+            if (!this.audioElement.ended) {
+                this.isPlaying = false;
+                this.updatePlayButton();
+                this.broadcastPlaybackState();
+            }
+        });
+
+        this.audioElement.addEventListener('ended', () => this.handleTrackFinished());
+        this.nativeAudioListenersAttached = true;
+    }
+
+    updateDurationFromMedia() {
+        const duration = Number(this.audioElement?.duration);
+        if (!Number.isFinite(duration) || duration <= 0) return;
+
+        if (this.currentTrack) {
+            this.currentTrack.duration = duration;
+        }
+
+        this.waveformDuration = duration;
+        this.durationTarget.textContent = this.formatTime(duration);
+        this.drawWaveform();
+        this.broadcastPlaybackState();
+    }
+
+    updateCurrentTimeFromMedia() {
+        const currentTime = Number(this.audioElement?.currentTime);
+        if (!Number.isFinite(currentTime) || currentTime < 0) return;
+
+        this.currentTimeTarget.textContent = this.formatTime(currentTime);
+        this.drawWaveform();
+    }
+
+    bestKnownDuration() {
+        const mediaDuration = Number(this.audioElement?.duration);
+        if (Number.isFinite(mediaDuration) && mediaDuration > 0) return mediaDuration;
+
+        const waveformDuration = Number(this.waveformDuration);
+        if (Number.isFinite(waveformDuration) && waveformDuration > 0) return waveformDuration;
+
+        const currentTrackDuration = Number(this.currentTrack?.duration);
+        if (Number.isFinite(currentTrackDuration) && currentTrackDuration > 0) return currentTrackDuration;
+
+        return null;
     }
 
     handlePlayTrack(event) {
@@ -133,57 +202,153 @@ export default class extends Controller {
 
     disconnect() {
         this.detachDocumentListeners();
-        // if (this.wavesurfer) {
-        //     this.wavesurfer.destroy();
-        // }
     }
 
-    setupEventListeners() {
-        this.wavesurfer.on('ready', () => {
-            const duration = this.wavesurfer.getDuration();
-            this.durationTarget.textContent = this.formatTime(duration);
+    setupWaveformRenderer() {
+        if (!this.hasWaveformTarget || this.waveformCanvas) return;
 
-            if (this.currentTrack) {
-                this.trackTitleTarget.textContent = this.currentTrack.title;
-                this.trackImageTarget.src = this.currentTrack.image;
-                this.trackArtistTarget.textContent = this.currentTrack.artist || "Unknown Artist";
-                this.updateLikeButton();
-                this.updateQueueControls();
-                this.broadcastPlaybackState();
-            }
-        });
+        this.waveformTarget.innerHTML = '';
+        this.waveformTarget.style.height ||= '100px';
 
-        this.wavesurfer.on('play', () => {
-            this.isPlaying = true;
-            this.playButtonTarget.innerHTML = Icons.pause;
-            this.broadcastPlaybackState();
-        });
+        this.waveformCanvas = document.createElement('canvas');
+        this.waveformCanvas.className = 'block w-full h-full';
+        this.waveformCanvas.style.width = '100%';
+        this.waveformCanvas.style.height = '100%';
+        this.waveformTarget.appendChild(this.waveformCanvas);
 
-        this.wavesurfer.on('pause', () => {
-            this.isPlaying = false;
-            this.playButtonTarget.innerHTML = Icons.play;
-            this.broadcastPlaybackState();
-        });
+        this.handleWaveformSeekEvent ||= this.seekWaveform.bind(this);
+        this.handleWaveformResizeEvent ||= this.drawWaveform.bind(this);
+        this.waveformTarget.addEventListener('click', this.handleWaveformSeekEvent);
+        window.addEventListener('resize', this.handleWaveformResizeEvent);
 
-        this.wavesurfer.on('audioprocess', () => {
-            const currentTime = this.wavesurfer.getCurrentTime();
-            this.currentTimeTarget.textContent = this.formatTime(currentTime);
-        });
+        this.drawWaveform();
+    }
 
-        this.wavesurfer.on('finish', () => {
-            if (this.currentQueue.length > 1) {
-                this.nextTrack();
-                return;
-            }
+    renderWaveform(peaks, duration = null) {
+        this.waveformData = this.validPeaks(peaks) ? this.normalizePeaks(peaks) : null;
+        this.waveformDuration = Number(duration) > 0 ? Number(duration) : this.bestKnownDuration();
+        this.drawWaveform();
+    }
 
-            this.isPlaying = false;
-            this.playButtonTarget.innerHTML = Icons.play;
-            this.broadcastPlaybackState();
-        });
+    normalizePeaks(peaks) {
+        const channels = Array.isArray(peaks?.[0]) ? peaks : [peaks];
+        const longestChannelLength = Math.max(...channels.map((channel) => Array.isArray(channel) ? channel.length : 0));
+        const pointCount = Math.floor(longestChannelLength / 2);
+        if (!Number.isFinite(pointCount) || pointCount <= 0) return [];
 
-        this.wavesurfer.on('interaction', () => {
-            this.currentTimeTarget.textContent = this.formatTime(this.wavesurfer.getCurrentTime());
-        });
+        const normalized = [];
+
+        for (let index = 0; index < pointCount; index += 1) {
+            let min = 1;
+            let max = -1;
+            let touched = false;
+
+            channels.forEach((channel) => {
+                if (!Array.isArray(channel)) return;
+
+                const channelMin = Number(channel[index * 2]);
+                const channelMax = Number(channel[index * 2 + 1]);
+                if (!Number.isFinite(channelMin) || !Number.isFinite(channelMax)) return;
+
+                min = Math.min(min, channelMin);
+                max = Math.max(max, channelMax);
+                touched = true;
+            });
+
+            normalized.push(touched ? Math.max(Math.abs(min), Math.abs(max)) : 0);
+        }
+
+        const maxAmplitude = Math.max(...normalized, 0);
+        if (maxAmplitude <= 0) return normalized;
+
+        return normalized.map((value) => value / maxAmplitude);
+    }
+
+    drawWaveform() {
+        if (!this.waveformCanvas || !this.hasWaveformTarget) return;
+
+        const rect = this.waveformTarget.getBoundingClientRect();
+        const cssWidth = Math.max(1, Math.floor(rect.width || this.waveformTarget.clientWidth || 1));
+        const cssHeight = Math.max(60, Math.floor(rect.height || this.waveformTarget.clientHeight || 100));
+        const ratio = window.devicePixelRatio || 1;
+
+        const canvasWidth = Math.floor(cssWidth * ratio);
+        const canvasHeight = Math.floor(cssHeight * ratio);
+        if (this.waveformCanvas.width !== canvasWidth) this.waveformCanvas.width = canvasWidth;
+        if (this.waveformCanvas.height !== canvasHeight) this.waveformCanvas.height = canvasHeight;
+
+        const context = this.waveformCanvas.getContext('2d');
+        if (!context) return;
+
+        context.setTransform(ratio, 0, 0, ratio, 0, 0);
+        context.clearRect(0, 0, cssWidth, cssHeight);
+
+        const progress = this.playbackProgress();
+        const data = Array.isArray(this.waveformData) ? this.waveformData : [];
+
+        if (data.length === 0) {
+            this.drawEmptyWaveform(context, cssWidth, cssHeight, progress);
+            return;
+        }
+
+        const barCount = Math.max(1, Math.min(cssWidth, data.length));
+        const samplesPerBar = data.length / barCount;
+        const barWidth = Math.max(1, cssWidth / barCount);
+        const progressX = cssWidth * progress;
+
+        for (let barIndex = 0; barIndex < barCount; barIndex += 1) {
+            const start = Math.floor(barIndex * samplesPerBar);
+            const end = Math.max(start + 1, Math.floor((barIndex + 1) * samplesPerBar));
+            const amplitude = Math.max(...data.slice(start, end), 0);
+            const barHeight = Math.max(2, amplitude * cssHeight * 0.82);
+            const x = barIndex * barWidth;
+            const y = (cssHeight - barHeight) / 2;
+
+            context.fillStyle = x <= progressX ? '#383351' : '#4F4A85';
+            context.fillRect(x, y, Math.max(1, barWidth - 1), barHeight);
+        }
+    }
+
+    drawEmptyWaveform(context, width, height, progress) {
+        const centerY = height / 2;
+        const progressX = width * progress;
+
+        context.lineWidth = 2;
+        context.strokeStyle = '#4F4A85';
+        context.beginPath();
+        context.moveTo(0, centerY);
+        context.lineTo(width, centerY);
+        context.stroke();
+
+        if (progressX > 0) {
+            context.strokeStyle = '#383351';
+            context.beginPath();
+            context.moveTo(0, centerY);
+            context.lineTo(progressX, centerY);
+            context.stroke();
+        }
+    }
+
+    playbackProgress() {
+        const duration = this.bestKnownDuration();
+        const currentTime = Number(this.audioElement?.currentTime);
+        if (!duration || !Number.isFinite(currentTime) || currentTime <= 0) return 0;
+
+        return Math.min(Math.max(currentTime / duration, 0), 1);
+    }
+
+    seekWaveform(event) {
+        if (!this.currentTrack || !this.audioElement) return;
+
+        const duration = this.bestKnownDuration();
+        if (!duration) return;
+
+        const rect = this.waveformTarget.getBoundingClientRect();
+        if (!rect.width) return;
+
+        const progress = Math.min(Math.max((event.clientX - rect.left) / rect.width, 0), 1);
+        this.audioElement.currentTime = progress * duration;
+        this.updateCurrentTimeFromMedia();
     }
 
     async loadQueue(queue, queueName, queueIndex = 0, autoplay = true, context = {}) {
@@ -192,6 +357,7 @@ export default class extends Controller {
 
         this.currentQueue = tracks;
         this.currentQueueName = queueName || 'Очередь воспроизведения';
+        this.currentQueueUrl = context.url || this.urlForContext(context.type, context.id);
         this.currentQueueIndex = this.safeQueueIndex(queueIndex, tracks);
         this.currentContextType = context.type || null;
         this.currentContextId = context.id || null;
@@ -205,11 +371,11 @@ export default class extends Controller {
         const track = this.currentQueue[this.currentQueueIndex];
         if (!track) return;
 
-        await this.loadTrack(track.id, track.url, track.name, track.artist, track.image, track.liked, track.likeUrl, track.unlikeUrl, autoplay);
+        await this.loadTrack(track.id, track.url, track.name, track.artist, track.image, track.liked, track.likeUrl, track.unlikeUrl, track.metadataUrl, track.duration, autoplay);
     }
 
-    async loadTrack(trackId, trackUrl, trackName, trackArtist, trackImage, liked = false, likeUrl = null, unlikeUrl = null, autoplay = true) {
-        if (!this.wavesurfer || !trackUrl) return;
+    async loadTrack(trackId, trackUrl, trackName, trackArtist, trackImage, liked = false, likeUrl = null, unlikeUrl = null, metadataUrl = null, fallbackDuration = null, autoplay = true) {
+        if (!this.audioElement || !trackUrl) return;
 
         const loadToken = Symbol('track-load');
         this.currentLoadToken = loadToken;
@@ -221,21 +387,48 @@ export default class extends Controller {
             image: trackImage,
             liked: liked,
             likeUrl: likeUrl || `/like_track/${trackId}`,
-            unlikeUrl: unlikeUrl || `/like_track/${trackId}`
+            unlikeUrl: unlikeUrl || `/like_track/${trackId}`,
+            metadataUrl: metadataUrl,
+            duration: fallbackDuration
         };
 
-        this.trackTitleTarget.textContent = this.currentTrack.title;
-        this.trackImageTarget.src = this.currentTrack.image;
-        this.trackArtistTarget.textContent = this.currentTrack.artist || "Unknown Artist";
+        this.audioElement.pause();
+        this.audioElement.removeAttribute('src');
+        this.audioElement.load();
+
+        const cachedMetadata = this.cachedTrackMetadata(metadataUrl);
+        const cachedDuration = Number(cachedMetadata?.duration);
+        const initialDuration = cachedDuration > 0 ? cachedDuration : fallbackDuration;
+        const cachedPeaks = cachedMetadata?.analyzed === true && this.validPeaks(cachedMetadata.peaks)
+            ? cachedMetadata.peaks
+            : null;
+
+        this.renderCurrentTrackInfo();
         this.currentTimeTarget.textContent = '0:00';
-        this.durationTarget.textContent = '0:00';
+        this.durationTarget.textContent = initialDuration ? this.formatTime(initialDuration) : '0:00';
+        this.renderWaveform(cachedPeaks, initialDuration);
         this.updateLikeButton();
         this.updateQueueControls();
         this.playerTarget.classList.remove("hidden");
         this.isAppeared = true;
         this.isPlaying = false;
-        this.playButtonTarget.innerHTML = Icons.play;
+        this.updatePlayButton();
         this.broadcastPlaybackState();
+
+        // Start the native audio request immediately. Metadata/waveform fetching
+        // must never block playback startup. The audio URL is used only here, so
+        // the browser keeps normal Range-request streaming.
+        this.audioElement.preload = autoplay ? 'auto' : 'metadata';
+        this.audioElement.src = trackUrl;
+
+        this.fetchAndRenderTrackMetadata(metadataUrl, fallbackDuration, loadToken);
+
+        if (autoplay) {
+            await this.playMedia();
+        } else {
+            this.audioElement.load();
+            this.isPlaying = false;
+        }
 
         fetch(`/tracks/${trackId}/stream`, {
             method: 'POST',
@@ -246,67 +439,88 @@ export default class extends Controller {
             credentials: 'same-origin'
         }).catch(() => {});
 
+        if (this.currentLoadToken !== loadToken) return;
+
+        this.updateDurationFromMedia();
+        this.updatePlayButton();
+        this.broadcastPlaybackState();
+    }
+
+    async playPause() {
+        if (!this.audioElement || !this.currentTrack) return;
+
+        if (this.isPlaying) {
+            this.audioElement.pause();
+            this.isPlaying = false;
+        } else {
+            await this.playMedia();
+        }
+
+        this.updatePlayButton();
+        this.broadcastPlaybackState();
+    }
+
+    async playMedia() {
+        if (!this.audioElement?.src) return;
+
         try {
-            await this.wavesurfer.load(trackUrl);
+            await this.audioElement.play();
+            this.isPlaying = true;
         } catch (error) {
-            if (this.currentLoadToken === loadToken) console.error(error);
+            console.warn('Не удалось начать воспроизведение', error);
+            this.isPlaying = false;
+        }
+    }
+
+    async nextTrack(event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+        await this.advanceQueueBy(1, true);
+    }
+
+    async previousTrack(event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+        await this.advanceQueueBy(-1, true);
+    }
+
+    async advanceQueueBy(step, autoplay = true) {
+        if (this.currentQueue.length === 0) return;
+
+        this.currentQueueIndex = (this.currentQueueIndex + step + this.currentQueue.length) % this.currentQueue.length;
+        this.updateQueueControls();
+        this.broadcastPlaybackState();
+        await this.loadCurrentQueueTrack(autoplay);
+    }
+
+    async handleTrackFinished() {
+        const finishToken = this.currentLoadToken;
+        const now = Date.now();
+        if (this.isAdvancingAfterFinish || this.handledFinishToken === finishToken || now - this.lastAutoAdvanceAt < 750) return;
+        this.handledFinishToken = finishToken;
+
+        if (this.currentQueue.length > 1) {
+            this.isAdvancingAfterFinish = true;
+            this.lastAutoAdvanceAt = now;
+            try {
+                await this.advanceQueueBy(1, true);
+            } finally {
+                window.setTimeout(() => {
+                    this.isAdvancingAfterFinish = false;
+                }, 250);
+            }
             return;
         }
 
-        if (this.currentLoadToken !== loadToken) return;
-
-        if (autoplay) {
-            await this.wavesurfer.play();
-            this.playButtonTarget.innerHTML = Icons.pause;
-            this.isPlaying = true;
-        } else {
-            this.playButtonTarget.innerHTML = Icons.play;
-            this.isPlaying = false;
-        }
-
+        this.isPlaying = false;
+        this.updatePlayButton();
         this.broadcastPlaybackState();
-    }
-
-    playPause() {
-        if (!this.wavesurfer || !this.currentTrack) return;
-
-        if (this.isPlaying) {
-            this.wavesurfer.pause();
-            this.playButtonTarget.innerHTML = Icons.play;
-            this.isPlaying = false;
-        } else {
-            this.wavesurfer.play();
-            this.playButtonTarget.innerHTML = Icons.pause;
-            this.isPlaying = true;
-        }
-
-        this.broadcastPlaybackState();
-    }
-
-    nextTrack(event) {
-        if (event) {
-            event.preventDefault();
-            event.stopPropagation();
-        }
-        if (this.currentQueue.length === 0) return;
-
-        this.currentQueueIndex = (this.currentQueueIndex + 1) % this.currentQueue.length;
-        this.updateQueueControls();
-        this.broadcastPlaybackState();
-        this.loadCurrentQueueTrack(true);
-    }
-
-    previousTrack(event) {
-        if (event) {
-            event.preventDefault();
-            event.stopPropagation();
-        }
-        if (this.currentQueue.length === 0) return;
-
-        this.currentQueueIndex = (this.currentQueueIndex - 1 + this.currentQueue.length) % this.currentQueue.length;
-        this.updateQueueControls();
-        this.broadcastPlaybackState();
-        this.loadCurrentQueueTrack(true);
     }
 
     noop(event) {
@@ -396,8 +610,16 @@ export default class extends Controller {
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw new Error(data.error || 'Не удалось сохранить плейлист');
 
-            this.setSaveQueueStatus(data.message || 'Плейлист сохранён');
-            window.setTimeout(() => this.closeSaveQueueMenu(), 1200);
+            if (data.playlist) {
+                this.currentQueueName = `Плейлист: ${data.playlist.name}`;
+                this.currentContextType = 'playlist';
+                this.currentContextId = data.playlist.id;
+                this.currentQueueUrl = data.playlist.url || this.urlForContext('playlist', data.playlist.id);
+                this.updateQueueControls();
+                this.broadcastPlaybackState();
+            }
+
+            this.setSaveQueueStatus(data.message || 'Плейлист сохранён', this.currentQueueUrl, 'Открыть');
         } catch (error) {
             console.error(error);
             this.setSaveQueueStatus(error.message || 'Не удалось сохранить плейлист');
@@ -489,6 +711,25 @@ export default class extends Controller {
         });
     }
 
+    renderCurrentTrackInfo() {
+        if (!this.currentTrack) return;
+
+        this.trackTitleTarget.textContent = this.currentTrack.title;
+        this.trackTitleTarget.title = this.currentTrack.title;
+        this.trackImageTarget.src = this.currentTrack.image;
+        this.trackImageTarget.alt = this.currentTrack.title;
+        const artist = this.currentTrack.artist || "Unknown Artist";
+        this.trackArtistTarget.textContent = artist;
+        this.trackArtistTarget.title = artist;
+    }
+
+    updatePlayButton() {
+        const title = this.isPlaying ? 'Пауза' : 'Воспроизвести';
+        this.playButtonTarget.innerHTML = this.isPlaying ? Icons.pause : Icons.play;
+        this.playButtonTarget.title = title;
+        this.playButtonTarget.setAttribute('aria-label', title);
+    }
+
     updateLikeButton() {
         if (!this.hasLikeButtonTarget || !this.hasLikeIconTarget) return;
 
@@ -522,8 +763,20 @@ export default class extends Controller {
         if (this.hasQueueTitleTarget) {
             if (!hasQueue) {
                 this.queueTitleTarget.textContent = '';
+                this.queueTitleTarget.removeAttribute('href');
+                this.queueTitleTarget.removeAttribute('title');
             } else {
-                this.queueTitleTarget.textContent = `${this.currentQueueName} · ${this.currentQueueIndex + 1}/${this.currentQueue.length}`;
+                const label = `${this.currentQueueName} · ${this.currentQueueIndex + 1}/${this.currentQueue.length}`;
+                this.queueTitleTarget.textContent = label;
+                this.queueTitleTarget.title = label;
+
+                if (this.currentQueueUrl) {
+                    this.queueTitleTarget.href = this.currentQueueUrl;
+                    this.queueTitleTarget.classList.add('hover:underline');
+                } else {
+                    this.queueTitleTarget.removeAttribute('href');
+                    this.queueTitleTarget.classList.remove('hover:underline');
+                }
             }
         }
     }
@@ -546,41 +799,56 @@ export default class extends Controller {
         }
     }
 
-    setSaveQueueStatus(message) {
+    setSaveQueueStatus(message, url = null, linkText = null) {
         if (!this.hasSaveQueueStatusTarget) return;
         this.saveQueueStatusTarget.textContent = message || '';
-    }
 
-    setVolume(event, volume) {
-        if (this.wavesurfer) {
-            if (event !== null) {
-                volume = parseFloat(event.target.value) / 100;
-            }
-            this.saveVolume(volume);
-            this.wavesurfer.setVolume(volume);
-            this.volumeSliderTarget.value = volume * 100;
-
-            if (volume === 0) {
-                this.volumeButtonTarget.innerHTML = Icons.offSound;
-            } else if (volume < 0.3) {
-                this.volumeButtonTarget.innerHTML = Icons.lowSound;
-            } else {
-                this.volumeButtonTarget.innerHTML = Icons.highSound;
-            }
+        if (url) {
+            const link = document.createElement('a');
+            link.href = url;
+            link.textContent = linkText || 'Открыть';
+            link.className = 'ml-2 text-green-400 hover:underline';
+            link.addEventListener('click', (event) => event.stopPropagation());
+            this.saveQueueStatusTarget.appendChild(link);
         }
     }
 
-    toggleMute() {
-        if (this.wavesurfer) {
-            const currentVolume = this.wavesurfer.getVolume();
+    setVolume(event, volume) {
+        if (!this.audioElement) return;
 
-            if (currentVolume > 0) {
-                this.lastVolume = currentVolume;
-                this.setVolume(null, 0);
-            } else {
-                const newVolume = this.lastVolume || 0.7;
-                this.setVolume(null, newVolume);
-            }
+        if (event !== null) {
+            volume = parseFloat(event.target.value) / 100;
+        }
+
+        volume = Math.min(Math.max(Number(volume) || 0, 0), 1);
+        this.saveVolume(volume);
+        this.audioElement.volume = volume;
+        this.volumeSliderTarget.value = volume * 100;
+
+        let title = 'Выключить звук';
+        if (volume === 0) {
+            this.volumeButtonTarget.innerHTML = Icons.offSound;
+            title = 'Включить звук';
+        } else if (volume < 0.3) {
+            this.volumeButtonTarget.innerHTML = Icons.lowSound;
+        } else {
+            this.volumeButtonTarget.innerHTML = Icons.highSound;
+        }
+        this.volumeButtonTarget.title = title;
+        this.volumeButtonTarget.setAttribute('aria-label', title);
+    }
+
+    toggleMute() {
+        if (!this.audioElement) return;
+
+        const currentVolume = this.audioElement.volume;
+
+        if (currentVolume > 0) {
+            this.lastVolume = currentVolume;
+            this.setVolume(null, 0);
+        } else {
+            const newVolume = this.lastVolume || 0.7;
+            this.setVolume(null, newVolume);
         }
     }
 
@@ -588,6 +856,8 @@ export default class extends Controller {
         return {
             id: track.id?.toString(),
             url: track.url || '',
+            metadataUrl: track.metadataUrl || track.metadata_url || '',
+            duration: Number(track.duration) > 0 ? Number(track.duration) : null,
             name: track.name || 'Без названия',
             artist: track.artist || 'Unknown Artist',
             image: track.image || '',
@@ -595,6 +865,102 @@ export default class extends Controller {
             likeUrl: track.likeUrl || `/like_track/${track.id}`,
             unlikeUrl: track.unlikeUrl || `/like_track/${track.id}`
         };
+    }
+
+    async fetchAndRenderTrackMetadata(metadataUrl, fallbackDuration, loadToken, attempt = 0) {
+        if (!metadataUrl) return;
+
+        const metadata = await this.fetchTrackMetadata(metadataUrl, fallbackDuration);
+        if (this.currentLoadToken !== loadToken) return;
+
+        const hasRealPeaks = metadata.analyzed === true && this.validPeaks(metadata.peaks);
+        const metadataDuration = Number(metadata.duration);
+        const duration = metadataDuration > 0 ? metadataDuration : fallbackDuration;
+
+        if (duration > 0 && this.currentTrack) {
+            this.currentTrack.duration = duration;
+            this.waveformDuration = duration;
+            this.durationTarget.textContent = this.formatTime(duration);
+        }
+
+        if (hasRealPeaks) {
+            this.renderWaveform(metadata.peaks, duration);
+            return;
+        }
+
+        // If analysis is still running, poll a few times in the background. This
+        // updates the waveform once Sidekiq saves peaks, but does not enqueue a
+        // new analysis job and does not block audio playback.
+        if (['pending', 'processing'].includes(metadata.status) && attempt < 6) {
+            window.setTimeout(() => {
+                if (this.currentLoadToken === loadToken) {
+                    this.fetchAndRenderTrackMetadata(metadataUrl, fallbackDuration, loadToken, attempt + 1);
+                }
+            }, attempt < 2 ? 1000 : 2500);
+        }
+    }
+
+    cachedTrackMetadata(metadataUrl) {
+        if (!metadataUrl || !this.metadataCache) return null;
+        return this.metadataCache.get(metadataUrl) || null;
+    }
+
+    async fetchTrackMetadata(metadataUrl, fallbackDuration = null) {
+        if (!metadataUrl) {
+            return { peaks: null, duration: fallbackDuration };
+        }
+
+        const cached = this.cachedTrackMetadata(metadataUrl);
+        if (cached) return cached;
+
+        if (this.metadataRequests?.has(metadataUrl)) {
+            return this.metadataRequests.get(metadataUrl);
+        }
+
+        const request = this.requestTrackMetadata(metadataUrl, fallbackDuration).finally(() => {
+            this.metadataRequests?.delete(metadataUrl);
+        });
+        this.metadataRequests?.set(metadataUrl, request);
+        return request;
+    }
+
+    async requestTrackMetadata(metadataUrl, fallbackDuration = null) {
+        try {
+            const response = await fetch(metadataUrl, {
+                headers: { 'Accept': 'application/json' },
+                credentials: 'same-origin',
+                cache: 'default'
+            });
+            if (!response.ok) throw new Error(`Metadata request failed: ${response.status}`);
+
+            const data = await response.json();
+            const metadata = {
+                peaks: data.peaks,
+                duration: Number(data.duration) > 0 ? Number(data.duration) : fallbackDuration,
+                analyzed: data.analyzed === true,
+                status: data.status || null,
+                error: data.error || null
+            };
+
+            // Cache only successful waveform data. Pending/failed responses should
+            // not hide a waveform that may become available a moment later.
+            if (metadata.analyzed === true && this.validPeaks(metadata.peaks)) {
+                this.metadataCache?.set(metadataUrl, metadata);
+            }
+
+            return metadata;
+        } catch (error) {
+            console.warn(error);
+            return { peaks: null, duration: fallbackDuration };
+        }
+    }
+
+    validPeaks(peaks) {
+        return Array.isArray(peaks) && peaks.length > 0 && Array.isArray(peaks[0]) && peaks[0].length > 0;
+    }
+
+    redrawWaveformAfterReveal() {
+        requestAnimationFrame(() => this.drawWaveform());
     }
 
     shouldToggleCurrent(detail) {
@@ -620,8 +986,19 @@ export default class extends Controller {
     contextFromDetail(detail) {
         return {
             type: detail.contextType || null,
-            id: detail.contextId || null
+            id: detail.contextId || null,
+            url: detail.contextUrl || this.urlForContext(detail.contextType, detail.contextId)
         };
+    }
+
+    urlForContext(type, id) {
+        if (!type || !id) return null;
+
+        if (type === 'album') return `/albums/${id}`;
+        if (type === 'playlist') return `/playlists/${id}`;
+        if (type === 'artist-popular') return `/profile/${id}`;
+
+        return null;
     }
 
     playbackState() {
@@ -631,7 +1008,8 @@ export default class extends Controller {
             queueName: this.currentQueueName,
             queueIndex: this.currentQueueIndex,
             contextType: this.currentContextType,
-            contextId: this.currentContextId
+            contextId: this.currentContextId,
+            contextUrl: this.currentQueueUrl
         };
     }
 

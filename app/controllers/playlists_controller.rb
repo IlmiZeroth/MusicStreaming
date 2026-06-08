@@ -1,6 +1,15 @@
 # frozen_string_literal: true
 
 class PlaylistsController < ApplicationController
+  before_action :set_playlist, only: [:show]
+
+  def show
+    @playlist_tracks = @playlist.playlist_tracks.includes(track: [:user, { album: { cover_image_attachment: :blob } }]).order(:position)
+    @tracks = @playlist_tracks.map(&:track).compact
+    @user = @playlist.user
+    @show_actions = UserPolicy.new(current_user, @user).settings?
+  end
+
   def create
     @playlist = current_user.playlists.build(playlist_params)
     track_ids = playlist_track_ids
@@ -11,13 +20,14 @@ class PlaylistsController < ApplicationController
     end
 
     respond_to do |format|
-      format.html { redirect_to collection_index_path, notice: 'Плейлист создан' }
+      format.html { redirect_to playlist_path(@playlist), notice: 'Плейлист создан' }
       format.json do
         render json: {
           message: 'Плейлист сохранён',
           playlist: {
             id: @playlist.id,
             name: @playlist.name,
+            url: playlist_path(@playlist),
             tracks_count: @playlist.tracks.count
           }
         }, status: :created
@@ -37,6 +47,11 @@ class PlaylistsController < ApplicationController
   end
 
   private
+
+  def set_playlist
+    @playlist = Playlist.includes(:user).find_by(id: params[:id])
+    redirect_to collection_index_path, alert: 'Плейлист не найден' unless @playlist.present?
+  end
 
   def playlist_params
     params.require(:playlist).permit(:name, :description)

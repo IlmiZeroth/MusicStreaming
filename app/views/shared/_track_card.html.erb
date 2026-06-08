@@ -1,4 +1,5 @@
-<% track_audio_url = track.audio_file.attached? ? url_for(track.audio_file) : '' %>
+<% track_audio_url = track.audio_file.attached? ? audio_track_path(track) : '' %>
+<% track_metadata_url = track.audio_file.attached? ? metadata_track_path(track) : '' %>
 <% track_image_url = track.album.cover_image.attached? ? url_for(track.album.cover_image) : asset_path('default-music.svg') %>
 <% liked = current_user.liked_track?(track) %>
 
@@ -7,6 +8,8 @@
      data-track-card-artist-value="<%= track.user.username %>"
      data-track-card-name-value="<%= track.name %>"
      data-track-card-url-value="<%= track_audio_url %>"
+     data-track-card-metadata-url-value="<%= track_metadata_url %>"
+     data-track-card-duration-value="<%= track.duration %>"
      data-track-card-image-value="<%= track_image_url %>"
      data-track-card-liked-value="<%= liked %>"
      data-track-card-like-url-value="<%= like_track_path(track) %>"
@@ -16,9 +19,9 @@
      class="track-card relative text-white bg-neutral-800 h-58 w-46 rounded-2xl flex flex-col justify-center items-center flex-shrink-0 overflow-hidden transition-all duration-200">
   <div class="cover-image group relative bg-neutral-700 h-36 w-40 rounded-2xl flex-shrink-0 hover:cursor-pointer transition-all duration-200" data-track-card-target="artwork">
     <% if track.album.cover_image&.attached? %>
-      <%= image_tag track.album.cover_image, class: "w-full h-full object-cover rounded-2xl" %>
+      <%= image_tag track.album.cover_image, class: "w-full h-full object-cover rounded-2xl", alt: track.name %>
     <% else %>
-      <%= image_tag 'default-music.svg', class: "w-[70%] h-[70%] ml-[14%] mt-[14%]" %>
+      <%= image_tag 'default-music.svg', class: "w-[70%] h-[70%] ml-[14%] mt-[14%]", alt: track.name %>
     <% end %>
 
     <div class="absolute inset-0 flex items-end justify-between rounded-2xl bg-black/20 backdrop-blur-sm opacity-0 transition-opacity duration-300 group-hover:opacity-100 p-3">
@@ -38,10 +41,10 @@
     </div>
   </div>
 
-  <div class="track-name mt-2 truncate w-40">
+  <div class="track-name mt-2 truncate w-40" title="<%= track.name %>">
     <%= track.name %>
   </div>
-  <div class="track-artist text-neutral-400 truncate w-40 hover:text-gray-400">
+  <div class="track-artist text-neutral-400 truncate w-40 hover:text-gray-400" title="<%= track.user.username %>">
     <%= link_to track.user.username, profile_path(track.user.id) %>
   </div>
 </div>

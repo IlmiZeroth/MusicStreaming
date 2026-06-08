@@ -11,26 +11,42 @@ export default class extends Controller {
     connect() {
         this.boundSync = this.sync.bind(this);
         document.addEventListener("navigation-history:changed", this.boundSync);
+        document.addEventListener("turbo:load", this.boundSync);
         this.sync();
     }
 
     disconnect() {
         document.removeEventListener("navigation-history:changed", this.boundSync);
+        document.removeEventListener("turbo:load", this.boundSync);
     }
 
     goBack(event) {
         event.preventDefault();
+        event.stopPropagation();
 
         const targetUrl = this.previousUrl();
-        if (!targetUrl || this.urlsEqual(targetUrl, this.currentUrl())) return;
+        if (targetUrl && !this.urlsEqual(targetUrl, this.currentUrl())) {
+            this.prepareStackForVisit(targetUrl);
+            this.visit(targetUrl);
+            return;
+        }
 
-        this.prepareStackForVisit(targetUrl);
-        this.visit(targetUrl);
+        if (window.history.length > 1) {
+            window.history.back();
+            return;
+        }
+
+        const fallbackUrl = this.fallbackUrl();
+        if (fallbackUrl && !this.urlsEqual(fallbackUrl, this.currentUrl())) {
+            this.visit(fallbackUrl);
+        }
     }
 
     sync() {
-        const targetUrl = this.previousUrl();
-        const canGoBack = Boolean(targetUrl && !this.urlsEqual(targetUrl, this.currentUrl()));
+        const targetUrl = this.previousUrl() || this.fallbackUrl();
+        const canGoBack = Boolean(
+            targetUrl && !this.urlsEqual(targetUrl, this.currentUrl())
+        ) || window.history.length > 1;
 
         this.element.disabled = !canGoBack;
         this.element.classList.toggle("opacity-40", !canGoBack);

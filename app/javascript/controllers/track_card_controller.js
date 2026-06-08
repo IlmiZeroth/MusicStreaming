@@ -6,6 +6,8 @@ export default class extends Controller {
     static values = {
         id: String,
         url: String,
+        metadataUrl: String,
+        duration: Number,
         name: String,
         artist: String,
         image: String,
@@ -18,7 +20,8 @@ export default class extends Controller {
         playIcon: String,
         pauseIcon: String,
         contextType: String,
-        contextId: String
+        contextId: String,
+        contextUrl: String
     };
 
     connect() {
@@ -51,6 +54,7 @@ export default class extends Controller {
                 queueIndex: queuePayload.index,
                 contextType: queuePayload.contextType,
                 contextId: queuePayload.contextId,
+                contextUrl: queuePayload.contextUrl,
                 toggle: true,
                 toggleScope: 'track'
             },
@@ -69,7 +73,8 @@ export default class extends Controller {
                 tracks,
                 index: this.safeQueueIndex(index, tracks),
                 contextType: this.contextType(),
-                contextId: this.contextId()
+                contextId: this.contextId(),
+                contextUrl: this.contextUrl()
             };
         }
 
@@ -80,7 +85,8 @@ export default class extends Controller {
                 tracks: [this.currentTrackPayload()],
                 index: 0,
                 contextType: this.contextType(),
-                contextId: this.contextId()
+                contextId: this.contextId(),
+                contextUrl: this.contextUrl()
             };
         }
 
@@ -96,7 +102,8 @@ export default class extends Controller {
             tracks: tracks.length > 0 ? tracks : [this.currentTrackPayload()],
             index: currentIndex >= 0 ? currentIndex : 0,
             contextType: queueElement.dataset.playbackContextTypeValue || this.contextType(),
-            contextId: queueElement.dataset.playbackContextIdValue || this.contextId()
+            contextId: queueElement.dataset.playbackContextIdValue || this.contextId(),
+            contextUrl: queueElement.dataset.playbackContextUrlValue || this.contextUrl()
         };
     }
 
@@ -104,6 +111,8 @@ export default class extends Controller {
         return {
             id: this.idValue,
             url: this.urlValue,
+            metadataUrl: this.metadataUrl(),
+            duration: this.duration(),
             name: this.nameValue,
             artist: this.artistValue,
             image: this.imageValue,
@@ -119,6 +128,8 @@ export default class extends Controller {
         return {
             id: dataset.trackCardIdValue,
             url: dataset.trackCardUrlValue,
+            metadataUrl: dataset.trackCardMetadataUrlValue,
+            duration: Number(dataset.trackCardDurationValue) || null,
             name: dataset.trackCardNameValue,
             artist: dataset.trackCardArtistValue,
             image: dataset.trackCardImageValue,
@@ -154,12 +165,24 @@ export default class extends Controller {
         }
     }
 
+    metadataUrl() {
+        return this.hasMetadataUrlValue ? this.metadataUrlValue : null;
+    }
+
+    duration() {
+        return this.hasDurationValue && this.durationValue > 0 ? this.durationValue : null;
+    }
+
     contextType() {
         return this.hasContextTypeValue ? this.contextTypeValue : null;
     }
 
     contextId() {
         return this.hasContextIdValue ? this.contextIdValue : null;
+    }
+
+    contextUrl() {
+        return this.hasContextUrlValue ? this.contextUrlValue : null;
     }
 
     playIconPath() {

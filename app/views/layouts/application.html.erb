@@ -37,7 +37,7 @@
   <% else %>
       <%= yield %>
   <% end %>
-  <% if controller_name == "pages" || controller_name == "profile" || controller_name == "albums" || controller_name == "studio" || controller_name == "collection" %>
+  <% if controller_name == "pages" || controller_name == "profile" || controller_name == "albums" || controller_name == "playlists" || controller_name == "studio" || controller_name == "collection" %>
     <%= render "shared/player"%>
   <% end %>
   </body>

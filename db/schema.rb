@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_05_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_07_203000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -111,6 +111,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_05_090000) do
 
   create_table "tracks", force: :cascade do |t|
     t.bigint "album_id", null: false
+    t.text "audio_analysis_error"
+    t.string "audio_analysis_status", default: "pending", null: false
+    t.datetime "audio_analyzed_at"
+    t.jsonb "audio_peaks"
+    t.integer "audio_peaks_version"
     t.datetime "created_at", null: false
     t.integer "duration"
     t.bigint "likes", default: 0, null: false

@@ -17,9 +17,9 @@
         <div class="track-info flex justify-start min-w-0" data-audio-player-target="trackInfo">
           <img class="object-cover rounded-2xl w-20 h-20 shrink-0" data-audio-player-target="trackImage">
           <div class="min-w-0">
-            <h3 class="ml-2 pointer-events-auto truncate max-w-70" data-audio-player-target="trackTitle">Загрузка...</h3>
+            <h3 class="ml-2 pointer-events-auto truncate max-w-70" data-audio-player-target="trackTitle" title="Загрузка...">Загрузка...</h3>
             <p class="ml-2 text-neutral-400 pointer-events-auto truncate max-w-70" data-audio-player-target="trackArtist"></p>
-            <p class="ml-2 text-neutral-500 text-xs pointer-events-auto truncate max-w-70" data-audio-player-target="queueTitle"></p>
+            <a class="ml-2 text-neutral-500 text-xs pointer-events-auto truncate max-w-70" data-audio-player-target="queueTitle"></a>
           </div>
         </div>
         <div class="time-display">
@@ -40,7 +40,9 @@
         <button type="button"
                 data-action="audio-player#playPause"
                 data-audio-player-target="playButton"
-                class="align-middle control-btn h-min mt-8 pointer-events-auto hover:cursor-pointer">
+                class="align-middle control-btn h-min mt-8 pointer-events-auto hover:cursor-pointer"
+                title="Воспроизвести"
+                aria-label="Воспроизвести">
           <%= image_tag "play.svg", class: "w-10 h-10" %>
         </button>
         <button type="button"
@@ -106,7 +108,9 @@
           <button type="button"
                   data-action="audio-player#toggleMute"
                   data-audio-player-target="volumeButton"
-                  class="control-btn h-min mt-8 pointer-events-auto shrink-0 hover:cursor-pointer">
+                  class="control-btn h-min mt-8 pointer-events-auto shrink-0 hover:cursor-pointer"
+                  title="Выключить звук"
+                  aria-label="Выключить звук">
             <%= image_tag "sound-2.svg", class: "w-10 h-10" %>
           </button>
         </div>

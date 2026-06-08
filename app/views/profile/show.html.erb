@@ -7,7 +7,7 @@
       <div class = "return text-neutral-400 w-8 h-8">
         <button type="button"
                 data-controller="smart-back"
-                data-action="smart-back#goBack"
+                data-action="click->smart-back#goBack"
                 data-smart-back-fallback-url-value="<%= pages_path %>"
                 class="w-8 h-8 hover:opacity-80 disabled:opacity-40 disabled:cursor-default transition-opacity"
                 title="Назад"
@@ -25,7 +25,7 @@
       <div class = "artist-details flex-col">
         <div class = "artist-name ml-1">
           <p class = "text-neutral-500 text-l">Исполнитель</p>
-          <p class = "text-white text-2xl"><%= @user.username %></p>
+          <p class = "text-white text-2xl truncate max-w-[60vw]" title="<%= @user.username %>"><%= @user.username %></p>
         </div>
         <div class = "artist-stats flex h-7 gap-3 mt-3">
           <div class = "streams text-white bg-neutral-800 ps-3 pe-3 rounded-2xl"><%= number_with_delimiter @user.total_streams %> слушателя в месяц</div>
@@ -50,6 +50,7 @@
                       data-album-card-queue-value="<%= popular_queue.to_json %>"
                       data-album-card-context-type-value="artist-popular"
                       data-album-card-context-id-value="<%= @user.id %>"
+                      data-album-card-context-url-value="<%= profile_path(@user) %>"
                       data-album-card-play-icon-value="<%= asset_path('play.svg') %>"
                       data-album-card-pause-icon-value="<%= asset_path('pause.svg') %>"
                       class = "bg-green-400 flex gap-2 justify-center items-center hover:text-gray-700 hover:cursor-pointer border border-solid rounded-2xl border-green-400 pt-1 pb-1 ps-3 pe-3 text-black">
@@ -77,7 +78,7 @@
     </div>
 
     <div class = "artist-content">
-      <div class = "popular-tracks section ml-5 mr-5 mt-5" data-controller="horizontal-scroll" data-playback-queue-name-value="Популярные треки — <%= @user.username %>" data-playback-context-type-value="artist-popular" data-playback-context-id-value="<%= @user.id %>">
+      <div class = "popular-tracks section ml-5 mr-5 mt-5" data-controller="horizontal-scroll" data-playback-queue-name-value="Популярные треки — <%= @user.username %>" data-playback-context-type-value="artist-popular" data-playback-context-id-value="<%= @user.id %>" data-playback-context-url-value="<%= profile_path(@user) %>">
         <div class="flex items-center justify-between gap-3">
           <h2 class = "text-2xl text-white">Популярные треки</h2>
           <div class="flex items-center gap-2">

@@ -6,6 +6,8 @@ export default class extends Controller {
     static values = {
         id: String,
         url: String,
+        metadataUrl: String,
+        duration: Number,
         name: String,
         artist: String,
         image: String,
@@ -16,6 +18,7 @@ export default class extends Controller {
         queue: Array,
         contextType: String,
         contextId: String,
+        contextUrl: String,
         playIcon: String,
         pauseIcon: String
     };
@@ -48,6 +51,7 @@ export default class extends Controller {
                 queueIndex: 0,
                 contextType: this.contextType(),
                 contextId: this.contextId(),
+                contextUrl: this.contextUrl(),
                 toggle: true,
                 toggleScope: 'context'
             },
@@ -76,6 +80,8 @@ export default class extends Controller {
         return {
             id: this.idValue,
             url: this.urlValue,
+            metadataUrl: this.metadataUrl(),
+            duration: this.duration(),
             name: this.nameValue,
             artist: this.artistValue,
             image: this.imageValue,
@@ -114,12 +120,24 @@ export default class extends Controller {
         return state.contextType === type && String(state.contextId || '') === String(id);
     }
 
+    metadataUrl() {
+        return this.hasMetadataUrlValue ? this.metadataUrlValue : null;
+    }
+
+    duration() {
+        return this.hasDurationValue && this.durationValue > 0 ? this.durationValue : null;
+    }
+
     contextType() {
         return this.hasContextTypeValue ? this.contextTypeValue : null;
     }
 
     contextId() {
         return this.hasContextIdValue ? this.contextIdValue : null;
+    }
+
+    contextUrl() {
+        return this.hasContextUrlValue ? this.contextUrlValue : null;
     }
 
     playIconPath() {

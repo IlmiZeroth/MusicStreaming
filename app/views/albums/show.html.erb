@@ -6,7 +6,7 @@
     <div class = "return text-neutral-400 w-8 h-8">
       <button type="button"
               data-controller="smart-back"
-              data-action="smart-back#goBack"
+              data-action="click->smart-back#goBack"
               data-smart-back-fallback-url-value="<%= profile_path(@user) %>"
               class="w-8 h-8 hover:opacity-80 disabled:opacity-40 disabled:cursor-default transition-opacity"
               title="Назад"
@@ -24,7 +24,7 @@
     <div class = "artist-details flex-col">
       <div class = "artist-name ml-1">
         <p class = "text-neutral-500 text-l">Альбом</p>
-        <p class = "text-white text-2xl"><%= @album.name %></p>
+        <p class = "text-white text-2xl truncate max-w-[60vw]" title="<%= @album.name %>"><%= @album.name %></p>
       </div>
       <div class = "artist-stats flex h-7 gap-3 mt-3">
         <div class = "streams text-white bg-neutral-800 ps-3 pe-3 rounded-2xl"><%= number_with_delimiter @album.total_streams %> слушателя в месяц</div>
@@ -48,6 +48,7 @@
                     data-album-card-queue-value="<%= album_queue.to_json %>"
                     data-album-card-context-type-value="album"
                     data-album-card-context-id-value="<%= @album.id %>"
+                    data-album-card-context-url-value="<%= album_path(@album) %>"
                     data-album-card-play-icon-value="<%= asset_path('play.svg') %>"
                     data-album-card-pause-icon-value="<%= asset_path('pause.svg') %>"
                     class = "bg-green-400 flex gap-2 justify-center items-center hover:text-gray-700 hover:cursor-pointer border border-solid rounded-2xl border-green-400 pt-1 pb-1 ps-3 pe-3 text-black">
@@ -68,7 +69,7 @@
     </div>
   </div>
   <div class = "album-content">
-    <div class = "tracks flex flex-col gap-5 mt-3 py-1 overflow-visible" data-playback-queue-name-value="Альбом: <%= @album.name %>" data-playback-context-type-value="album" data-playback-context-id-value="<%= @album.id %>">
+    <div class = "tracks flex flex-col gap-5 mt-3 py-1 overflow-visible" data-playback-queue-name-value="Альбом: <%= @album.name %>" data-playback-context-type-value="album" data-playback-context-id-value="<%= @album.id %>" data-playback-context-url-value="<%= album_path(@album) %>">
       <% @tracks.each do |track| %>
         <%= render "shared/track", track: track%>
       <% end %>

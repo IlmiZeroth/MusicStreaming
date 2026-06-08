@@ -5,7 +5,7 @@
     <div class = "return w-8 h-8 text-2xl text-neutral-700">
       <button type="button"
               data-controller="smart-back"
-              data-action="smart-back#goBack"
+              data-action="click->smart-back#goBack"
               data-smart-back-fallback-url-value="<%= profile_path(@user) %>"
               class="hover:text-neutral-300 disabled:opacity-40 disabled:cursor-default transition-colors"
               title="Назад"

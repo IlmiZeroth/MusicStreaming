@@ -1,0 +1,100 @@
+<%= render "shared/header" %>
+<% playlist_queue = player_tracks_payload(@tracks) %>
+<% first_playlist_track = playlist_queue.first %>
+<% playlist_image_url = @tracks.first&.album&.cover_image&.attached? ? url_for(@tracks.first.album.cover_image) : asset_path('default-music.svg') %>
+
+<div class="playlist-page mb-40">
+  <div class="playlist-info flex gap-3 pl-3 mt-3 pb-5 border-b border-solid border-b-neutral-800">
+    <div class="return text-neutral-400 w-8 h-8">
+      <button type="button"
+              data-controller="smart-back"
+              data-action="click->smart-back#goBack"
+              data-smart-back-fallback-url-value="<%= collection_index_path %>"
+              class="w-8 h-8 hover:opacity-80 disabled:opacity-40 disabled:cursor-default transition-opacity"
+              title="Назад"
+              aria-label="Назад">
+        <%= image_tag 'left.svg' %>
+      </button>
+    </div>
+
+    <div class="playlist-cover h-40 w-40 rounded-2xl bg-neutral-700 flex items-center justify-center overflow-hidden">
+      <% if @tracks.first&.album&.cover_image&.attached? %>
+        <%= image_tag @tracks.first.album.cover_image, class: "w-full h-full object-cover rounded-2xl", alt: @playlist.name %>
+      <% else %>
+        <%= image_tag 'default-music.svg', class: "w-[70%] h-[70%]", alt: @playlist.name %>
+      <% end %>
+    </div>
+
+    <div class="playlist-details flex-col min-w-0">
+      <div class="playlist-name ml-1 min-w-0">
+        <p class="text-neutral-500 text-l">Плейлист</p>
+        <p class="text-white text-2xl truncate max-w-[60vw]" title="<%= @playlist.name %>"><%= @playlist.name %></p>
+        <% if @playlist.description.present? %>
+          <p class="text-neutral-400 truncate max-w-[60vw]" title="<%= @playlist.description %>"><%= @playlist.description %></p>
+        <% end %>
+      </div>
+
+      <div class="playlist-stats flex h-7 gap-3 mt-3">
+        <div class="owner text-white bg-neutral-800 ps-3 pe-3 rounded-2xl truncate max-w-56" title="<%= @playlist.user.username %>">
+          <%= link_to @playlist.user.username, profile_path(@playlist.user), class: "hover:underline" %>
+        </div>
+        <div class="tracks-count text-white bg-neutral-800 ps-3 pe-3 rounded-2xl"><%= number_with_delimiter @tracks.size %> треков</div>
+      </div>
+
+      <div class="control-buttons flex gap-3 items-center">
+        <div class="listen-button h-10 mt-3">
+          <% if first_playlist_track.present? %>
+            <button type="button"
+                    data-controller="album-card"
+                    data-action="click->album-card#playTrack"
+                    data-album-card-id-value="<%= first_playlist_track[:id] %>"
+                    data-album-card-artist-value="<%= first_playlist_track[:artist] %>"
+                    data-album-card-name-value="<%= first_playlist_track[:name] %>"
+                    data-album-card-url-value="<%= first_playlist_track[:url] %>"
+                    data-album-card-image-value="<%= first_playlist_track[:image] %>"
+                    data-album-card-liked-value="<%= first_playlist_track[:liked] %>"
+                    data-album-card-like-url-value="<%= first_playlist_track[:likeUrl] %>"
+                    data-album-card-unlike-url-value="<%= first_playlist_track[:unlikeUrl] %>"
+                    data-album-card-queue-name-value="Плейлист: <%= @playlist.name %>"
+                    data-album-card-queue-value="<%= playlist_queue.to_json %>"
+                    data-album-card-context-type-value="playlist"
+                    data-album-card-context-id-value="<%= @playlist.id %>"
+                    data-album-card-context-url-value="<%= playlist_path(@playlist) %>"
+                    data-album-card-play-icon-value="<%= asset_path('play.svg') %>"
+                    data-album-card-pause-icon-value="<%= asset_path('pause.svg') %>"
+                    class="bg-green-400 flex gap-2 justify-center items-center hover:text-gray-700 hover:cursor-pointer border border-solid rounded-2xl border-green-400 pt-1 pb-1 ps-3 pe-3 text-black"
+                    title="Воспроизвести плейлист">
+              <%= image_tag "play.svg", class: "w-5 h-5", data: { album_card_target: "playIcon" } %> Слушать
+            </button>
+          <% else %>
+            <button type="button"
+                    disabled
+                    class="bg-neutral-700 flex gap-2 justify-center items-center border border-solid rounded-2xl border-neutral-700 pt-1 pb-1 ps-3 pe-3 text-neutral-400 cursor-not-allowed"
+                    title="В плейлисте пока нет треков">
+              <%= image_tag "play.svg", class: "w-5 h-5 opacity-50" %> Слушать
+            </button>
+          <% end %>
+        </div>
+        <div class="like-playlist-button h-10 mt-3 flex items-center">
+          <%= render 'shared/playlist_like_button', playlist: @playlist %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="playlist-content">
+    <% if @tracks.present? %>
+      <div class="tracks flex flex-col gap-5 mt-3 py-1 overflow-visible"
+           data-playback-queue-name-value="Плейлист: <%= @playlist.name %>"
+           data-playback-context-type-value="playlist"
+           data-playback-context-id-value="<%= @playlist.id %>"
+           data-playback-context-url-value="<%= playlist_path(@playlist) %>">
+        <% @tracks.each do |track| %>
+          <%= render "shared/track", track: track %>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="m-5 rounded-2xl bg-neutral-800 p-5 text-neutral-400">В этом плейлисте пока нет треков.</p>
+    <% end %>
+  </div>
+</div>
