@@ -1,0 +1,36 @@
+<%= render "shared/header" %>
+
+<div class="text-white px-6 py-6 mb-28">
+  <div class="flex items-center justify-between gap-4 mb-6">
+    <div>
+      <h1 class="text-3xl font-bold">Права пользователей</h1>
+      <p class="text-neutral-400 mt-1">Администратор может выдавать и забирать роли.</p>
+    </div>
+    <%= link_to "Назад в админ-панель", admin_root_path, class: "bg-neutral-800 hover:bg-neutral-700 px-4 py-2 rounded-2xl" %>
+  </div>
+
+  <div class="bg-neutral-800 rounded-2xl p-5 overflow-x-auto">
+    <table class="w-full text-left">
+      <thead class="text-neutral-400 border-b border-neutral-700">
+        <tr><th class="py-2">ID</th><th>Пользователь</th><th>Email</th><th>Текущая роль</th><th>Новая роль</th><th></th></tr>
+      </thead>
+      <tbody>
+        <% @users.each do |user| %>
+          <tr class="border-b border-neutral-700/60">
+            <td class="py-3 text-neutral-400"><%= user.id %></td>
+            <td><%= user.username %></td>
+            <td class="text-neutral-300"><%= user.email %></td>
+            <td><span class="bg-neutral-700 px-3 py-1 rounded-2xl"><%= user.role_label %></span></td>
+            <td>
+              <%= form_with model: [:admin, user], method: :patch, local: true, class: "flex items-center gap-2" do |f| %>
+                <%= f.select :user_role, User.role_options, {}, class: "bg-neutral-700 rounded-xl px-3 py-2" %>
+                <%= f.submit "Сохранить", class: "bg-green-500 hover:bg-green-400 text-black px-3 py-2 rounded-xl cursor-pointer" %>
+              <% end %>
+            </td>
+            <td class="text-neutral-500"><%= "это вы" if user == current_user %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

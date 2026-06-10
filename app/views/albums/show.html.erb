@@ -7,7 +7,7 @@
       <button type="button"
               data-controller="smart-back"
               data-action="click->smart-back#goBack"
-              data-smart-back-fallback-url-value="<%= profile_path(@user) %>"
+              data-smart-back-fallback-url-value="<%= profile_path(@artist) %>"
               class="w-8 h-8 hover:opacity-80 disabled:opacity-40 disabled:cursor-default transition-opacity"
               title="Назад"
               aria-label="Назад">
@@ -69,11 +69,15 @@
     </div>
   </div>
   <div class = "album-content">
-    <div class = "tracks flex flex-col gap-5 mt-3 py-1 overflow-visible" data-playback-queue-name-value="Альбом: <%= @album.name %>" data-playback-context-type-value="album" data-playback-context-id-value="<%= @album.id %>" data-playback-context-url-value="<%= album_path(@album) %>">
-      <% @tracks.each do |track| %>
-        <%= render "shared/track", track: track%>
-      <% end %>
-    </div>
+    <% if @tracks.present? %>
+      <div class = "tracks flex flex-col gap-5 mt-3 py-1 overflow-visible" data-playback-queue-name-value="Альбом: <%= @album.name %>" data-playback-context-type-value="album" data-playback-context-id-value="<%= @album.id %>" data-playback-context-url-value="<%= album_path(@album) %>">
+        <% @tracks.each do |track| %>
+          <%= render "shared/track", track: track %>
+        <% end %>
+      </div>
+    <% else %>
+      <%= render "shared/empty_state", title: "В альбоме пока нет треков", description: "Когда модераторы загрузят треки, они появятся здесь." %>
+    <% end %>
     <% if @show_actions %>
       <%= render "shared/track_create" %>
     <% end %>

@@ -1,6 +1,6 @@
 class StudioController < PagesController
   def index
-    @user = current_user
-    @albums = @user.albums
+    authorize :moderation, :access?
+    redirect_to moderation_root_path
   end
 end

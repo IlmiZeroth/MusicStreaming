@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_07_203000) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_08_133000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -42,6 +42,35 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_07_203000) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+
+  create_table "artists", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id"
+    t.text "description", default: "", null: false
+    t.bigint "legacy_user_id"
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_artists_on_created_by_id"
+    t.index ["legacy_user_id"], name: "index_artists_on_legacy_user_id", unique: true
+    t.index ["name"], name: "index_artists_on_name", unique: true
+  end
+
+  create_table "audit_logs", force: :cascade do |t|
+    t.string "action", null: false
+    t.bigint "actor_id"
+    t.bigint "auditable_id"
+    t.string "auditable_type"
+    t.datetime "created_at", null: false
+    t.string "ip_address"
+    t.jsonb "metadata", default: {}, null: false
+    t.datetime "updated_at", null: false
+    t.string "user_agent"
+    t.index ["action", "created_at"], name: "index_audit_logs_on_action_and_created_at"
+    t.index ["actor_id", "created_at"], name: "index_audit_logs_on_actor_id_and_created_at"
+    t.index ["actor_id"], name: "index_audit_logs_on_actor_id"
+    t.index ["auditable_type", "auditable_id"], name: "index_audit_logs_on_auditable"
+  end
+
   create_table "album_likes", force: :cascade do |t|
     t.bigint "album_id", null: false
     t.datetime "created_at", null: false
@@ -53,19 +82,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_07_203000) do
   end
 
   create_table "albums", force: :cascade do |t|
+    t.bigint "artist_id", null: false
     t.datetime "created_at", null: false
     t.bigint "likes", default: 0, null: false
     t.string "name"
     t.date "release_date"
     t.datetime "updated_at", null: false
-    t.bigint "user_id", null: false
-    t.index ["user_id"], name: "index_albums_on_user_id"
+    t.index ["artist_id"], name: "index_albums_on_artist_id"
   end
 
   create_table "follows", force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.integer "followed_id"
-    t.integer "follower_id"
+    t.bigint "followed_id"
+    t.bigint "follower_id"
     t.datetime "updated_at", null: false
     t.index ["follower_id", "followed_id"], name: "index_follows_on_follower_id_and_followed_id", unique: true
   end
@@ -143,9 +172,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_07_203000) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "artists", "users", column: "created_by_id"
+  add_foreign_key "audit_logs", "users", column: "actor_id"
   add_foreign_key "album_likes", "albums"
   add_foreign_key "album_likes", "users"
-  add_foreign_key "albums", "users"
+  add_foreign_key "albums", "artists"
   add_foreign_key "playlist_likes", "playlists"
   add_foreign_key "playlist_likes", "users"
   add_foreign_key "playlist_tracks", "playlists"

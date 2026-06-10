@@ -1,4 +1,4 @@
-<% playlist_tracks = playlist.playlist_tracks.includes(track: [{ album: { cover_image_attachment: :blob } }, :user]).order(:position).map(&:track).compact %>
+<% playlist_tracks = playlist.playlist_tracks.includes(track: [{ album: [:artist, { cover_image_attachment: :blob }] }]).order(:position).map(&:track).compact %>
 <% playlist_queue = player_tracks_payload(playlist_tracks) %>
 <% first_track = playlist_tracks.first %>
 <% first_track_audio_url = first_track&.audio_file&.attached? ? audio_track_path(first_track) : '' %>
@@ -8,7 +8,7 @@
 
 <div data-controller="album-card"
      data-album-card-id-value="<%= first_track&.id %>"
-     data-album-card-artist-value="<%= first_track&.user&.username || playlist.user.username %>"
+     data-album-card-artist-value="<%= first_track&.artist&.name || playlist.user.username %>"
      data-album-card-name-value="<%= first_track&.name || playlist.name %>"
      data-album-card-url-value="<%= first_track_audio_url %>"
      data-album-card-metadata-url-value="<%= first_track_metadata_url %>"
@@ -60,7 +60,7 @@
   </div>
 
   <div class="playlist-owner text-neutral-400 truncate w-40 hover:text-gray-400" title="<%= playlist.user.username %>">
-    <%= link_to playlist.user.username, profile_path(playlist.user) %>
+    <%= playlist.user.username %>
   </div>
 
   <div class="playlist-count text-neutral-500 text-xs truncate w-40" title="<%= playlist_tracks.size %> треков">

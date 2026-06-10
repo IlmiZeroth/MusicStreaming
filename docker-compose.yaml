@@ -13,7 +13,7 @@ x-app: &app
 services:
   setup:
     <<: *app
-    command: bash -lc "bundle exec rails db:prepare"
+    command: bash -lc "bundle exec rails db:prepare db:seed"
     depends_on:
       db:
         condition: service_healthy

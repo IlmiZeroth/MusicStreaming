@@ -120,30 +120,5 @@
       <% end %>
     </section>
 
-    <section class="liked-playlists section" data-controller="horizontal-scroll">
-      <div class="flex items-center justify-between gap-3">
-        <div class="flex items-end gap-3">
-          <h2 class="text-2xl">Понравившиеся плейлисты</h2>
-          <span class="text-neutral-400"><%= @liked_playlists.size %></span>
-        </div>
-        <div class="flex items-center gap-2">
-          <button type="button" data-action="horizontal-scroll#scrollPrevious" data-horizontal-scroll-target="previousButton" class="rounded-full bg-neutral-800/90 p-1.5 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-default transition-colors" title="Назад">
-            <%= image_tag 'left.svg', class: 'w-5 h-5' %>
-          </button>
-          <button type="button" data-action="horizontal-scroll#scrollNext" data-horizontal-scroll-target="nextButton" class="rounded-full bg-neutral-800/90 p-1.5 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-default transition-colors" title="Вперёд">
-            <%= image_tag 'right.svg', class: 'w-5 h-5' %>
-          </button>
-        </div>
-      </div>
-      <% if @liked_playlists.present? %>
-        <div class="flex flex-row gap-5 mt-3 py-1 px-1 overflow-x-auto" data-horizontal-scroll-target="scroller" data-action="wheel->horizontal-scroll#scrollByWheel scroll->horizontal-scroll#updateButtons">
-          <% @liked_playlists.each do |playlist| %>
-            <%= render 'shared/playlist_card', playlist: playlist, show_like: true %>
-          <% end %>
-        </div>
-      <% else %>
-        <p class="mt-3 rounded-2xl bg-neutral-800 p-5 text-neutral-400">Понравившиеся чужие плейлисты будут здесь, когда появится полноценная страница плейлистов.</p>
-      <% end %>
-    </section>
   </div>
 </div>

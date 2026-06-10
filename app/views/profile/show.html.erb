@@ -1,129 +1,134 @@
 <%= render "shared/header" %>
-<% if @user %>
-  <% popular_queue = player_tracks_payload(@popular_tracks) %>
-  <% first_popular_track = popular_queue.first %>
-  <div class = "profile mb-40">
-    <div class = "artist-info flex gap-3 pl-3 mt-3 pb-2 border-b border-solid border-b-neutral-800">
-      <div class = "return text-neutral-400 w-8 h-8">
-        <button type="button"
-                data-controller="smart-back"
-                data-action="click->smart-back#goBack"
-                data-smart-back-fallback-url-value="<%= pages_path %>"
-                class="w-8 h-8 hover:opacity-80 disabled:opacity-40 disabled:cursor-default transition-opacity"
-                title="Назад"
-                aria-label="Назад">
-          <%= image_tag 'left.svg' %>
-        </button>
-      </div>
-      <div class = "artist-avatar h-40 w-40">
-        <% if @user.avatar.attached? %>
-          <%= image_tag @user.avatar, class: "w-full h-full object-cover rounded-2xl" %>
-        <% else %>
-          <%= image_tag 'default-user.svg', class: "w-full h-full object-cover rounded-2xl"  %>
+
+<% popular_queue = player_tracks_payload(@popular_tracks) %>
+<% first_popular_track = popular_queue.first %>
+
+<div class="profile mb-40">
+  <div class="artist-info flex gap-3 pl-3 mt-3 pb-2 border-b border-solid border-b-neutral-800">
+    <div class="return text-neutral-400 w-8 h-8">
+      <button type="button"
+              data-controller="smart-back"
+              data-action="click->smart-back#goBack"
+              data-smart-back-fallback-url-value="<%= pages_path %>"
+              class="w-8 h-8 hover:opacity-80 disabled:opacity-40 disabled:cursor-default transition-opacity"
+              title="Назад"
+              aria-label="Назад">
+        <%= image_tag "left.svg" %>
+      </button>
+    </div>
+
+    <div class="artist-avatar h-40 w-40">
+      <% if @artist.avatar.attached? %>
+        <%= image_tag @artist.avatar, class: "w-full h-full object-cover rounded-2xl" %>
+      <% else %>
+        <%= image_tag "default-user.svg", class: "w-full h-full object-cover rounded-2xl" %>
+      <% end %>
+    </div>
+
+    <div class="artist-details flex-col min-w-0">
+      <div class="artist-name ml-1">
+        <p class="text-neutral-500 text-l">Исполнитель</p>
+        <p class="text-white text-2xl truncate max-w-[60vw]" title="<%= @artist.name %>"><%= @artist.name %></p>
+        <% if @artist.description.present? %>
+          <p class="text-neutral-400 max-w-[60vw] mt-1"><%= @artist.description %></p>
         <% end %>
       </div>
-      <div class = "artist-details flex-col">
-        <div class = "artist-name ml-1">
-          <p class = "text-neutral-500 text-l">Исполнитель</p>
-          <p class = "text-white text-2xl truncate max-w-[60vw]" title="<%= @user.username %>"><%= @user.username %></p>
-        </div>
-        <div class = "artist-stats flex h-7 gap-3 mt-3">
-          <div class = "streams text-white bg-neutral-800 ps-3 pe-3 rounded-2xl"><%= number_with_delimiter @user.total_streams %> слушателя в месяц</div>
-          <div class = "tracks-count text-white bg-neutral-800 ps-3 pe-3 rounded-2xl"> <%= number_with_delimiter @user.tracks_count %> треков </div>
-          <div class = "albums-count text-white bg-neutral-800 ps-3 pe-3 rounded-2xl"> <%= number_with_delimiter @user.albums_count %> альбомов </div>
-        </div>
-        <div class = "control-buttons flex gap-10">
-          <div class = "listen-button h-10 mt-3">
-            <% if first_popular_track.present? %>
-              <button type="button"
-                      data-controller="album-card"
-                      data-action="click->album-card#playTrack"
-                      data-album-card-id-value="<%= first_popular_track[:id] %>"
-                      data-album-card-artist-value="<%= first_popular_track[:artist] %>"
-                      data-album-card-name-value="<%= first_popular_track[:name] %>"
-                      data-album-card-url-value="<%= first_popular_track[:url] %>"
-                      data-album-card-image-value="<%= first_popular_track[:image] %>"
-                      data-album-card-liked-value="<%= first_popular_track[:liked] %>"
-                      data-album-card-like-url-value="<%= first_popular_track[:likeUrl] %>"
-                      data-album-card-unlike-url-value="<%= first_popular_track[:unlikeUrl] %>"
-                      data-album-card-queue-name-value="Популярные треки — <%= @user.username %>"
-                      data-album-card-queue-value="<%= popular_queue.to_json %>"
-                      data-album-card-context-type-value="artist-popular"
-                      data-album-card-context-id-value="<%= @user.id %>"
-                      data-album-card-context-url-value="<%= profile_path(@user) %>"
-                      data-album-card-play-icon-value="<%= asset_path('play.svg') %>"
-                      data-album-card-pause-icon-value="<%= asset_path('pause.svg') %>"
-                      class = "bg-green-400 flex gap-2 justify-center items-center hover:text-gray-700 hover:cursor-pointer border border-solid rounded-2xl border-green-400 pt-1 pb-1 ps-3 pe-3 text-black">
-                <%= image_tag "play.svg", class: "w-5 h-5", data: { album_card_target: "playIcon" } %> Слушать
-              </button>
-            <% else %>
-              <button type="button"
-                      disabled
-                      class = "bg-neutral-700 flex gap-2 justify-center items-center border border-solid rounded-2xl border-neutral-700 pt-1 pb-1 ps-3 pe-3 text-neutral-400 cursor-not-allowed">
-                <%= image_tag "play.svg", class: "w-5 h-5 opacity-50"%> Слушать
-              </button>
-            <% end %>
-          </div>
-          <div class = "follow-button h-10 mt-3">
-            <% if current_user != @user && !current_user.following?(@user) %>
-              <%= button_to "+ Подписаться", follow_path(@user), method: :post, class: "bg-neutral-800 flex gap-2 justify-center items-center hover:text-neutral-300 hover:cursor-pointer border border-solid rounded-2xl border-green-400 pt-1 pb-1 ps-3 pe-3 text-white transition-colors duration-700" %>
-            <% elsif current_user != @user %>
-              <%= button_to "Вы подписаны", unfollow_path(@user), method: :delete, class: "bg-green-400 flex gap-1 justify-center items-center text-black hover:text-neutral-300 hover:cursor-pointer border border-solid rounded-2xl border-green-400 pt-1 pb-1 ps-3 pe-3 transition-colors duration-700" %>
-            <% else %>
-              <div class = "justify-center items-center text-neutral-300 pt-1 pb-1 ps-3 pe-3"> Это ваш профиль </div>
-            <% end %>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <div class = "artist-content">
-      <div class = "popular-tracks section ml-5 mr-5 mt-5" data-controller="horizontal-scroll" data-playback-queue-name-value="Популярные треки — <%= @user.username %>" data-playback-context-type-value="artist-popular" data-playback-context-id-value="<%= @user.id %>" data-playback-context-url-value="<%= profile_path(@user) %>">
-        <div class="flex items-center justify-between gap-3">
-          <h2 class = "text-2xl text-white">Популярные треки</h2>
-          <div class="flex items-center gap-2">
-            <button type="button" data-action="horizontal-scroll#scrollPrevious" data-horizontal-scroll-target="previousButton" class="rounded-full bg-neutral-800/90 p-1.5 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-default transition-colors" title="Назад">
-              <%= image_tag 'left.svg', class: 'w-5 h-5' %>
+      <div class="artist-stats flex h-7 gap-3 mt-3">
+        <div class="streams text-white bg-neutral-800 ps-3 pe-3 rounded-2xl"><%= number_with_delimiter @artist.total_streams %> слушателя в месяц</div>
+        <div class="tracks-count text-white bg-neutral-800 ps-3 pe-3 rounded-2xl"><%= number_with_delimiter @artist.tracks_count %> треков</div>
+        <div class="albums-count text-white bg-neutral-800 ps-3 pe-3 rounded-2xl"><%= number_with_delimiter @artist.albums_count %> альбомов</div>
+      </div>
+
+      <div class="control-buttons flex gap-10">
+        <div class="listen-button h-10 mt-3">
+          <% if first_popular_track.present? %>
+            <button type="button"
+                    data-controller="album-card"
+                    data-action="click->album-card#playTrack"
+                    data-album-card-id-value="<%= first_popular_track[:id] %>"
+                    data-album-card-artist-value="<%= first_popular_track[:artist] %>"
+                    data-album-card-name-value="<%= first_popular_track[:name] %>"
+                    data-album-card-url-value="<%= first_popular_track[:url] %>"
+                    data-album-card-image-value="<%= first_popular_track[:image] %>"
+                    data-album-card-liked-value="<%= first_popular_track[:liked] %>"
+                    data-album-card-like-url-value="<%= first_popular_track[:likeUrl] %>"
+                    data-album-card-unlike-url-value="<%= first_popular_track[:unlikeUrl] %>"
+                    data-album-card-queue-name-value="Популярные треки — <%= @artist.name %>"
+                    data-album-card-queue-value="<%= popular_queue.to_json %>"
+                    data-album-card-context-type-value="artist-popular"
+                    data-album-card-context-id-value="<%= @artist.id %>"
+                    data-album-card-context-url-value="<%= profile_path(@artist) %>"
+                    data-album-card-play-icon-value="<%= asset_path('play.svg') %>"
+                    data-album-card-pause-icon-value="<%= asset_path('pause.svg') %>"
+                    class="bg-green-400 flex gap-2 justify-center items-center hover:text-gray-700 hover:cursor-pointer border border-solid rounded-2xl border-green-400 pt-1 pb-1 ps-3 pe-3 text-black">
+              <%= image_tag "play.svg", class: "w-5 h-5", data: { album_card_target: "playIcon" } %> Слушать
             </button>
-            <button type="button" data-action="horizontal-scroll#scrollNext" data-horizontal-scroll-target="nextButton" class="rounded-full bg-neutral-800/90 p-1.5 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-default transition-colors" title="Вперёд">
-              <%= image_tag 'right.svg', class: 'w-5 h-5' %>
+          <% else %>
+            <button type="button" disabled class="bg-neutral-700 flex gap-2 justify-center items-center border border-solid rounded-2xl border-neutral-700 pt-1 pb-1 ps-3 pe-3 text-neutral-400 cursor-not-allowed">
+              <%= image_tag "play.svg", class: "w-5 h-5 opacity-50" %> Слушать
             </button>
-          </div>
-        </div>
-        <div class = "tracks flex flex-row gap-5 mt-3 py-1 px-1 overflow-x-auto" data-horizontal-scroll-target="scroller" data-action="wheel->horizontal-scroll#scrollByWheel scroll->horizontal-scroll#updateButtons">
-          <% @popular_tracks.each do |track| %>
-            <%= render 'shared/track_card', track: track %>
           <% end %>
         </div>
-      </div>
-      <div class = "albums section ml-5 mr-5 mt-5" data-controller="horizontal-scroll">
-        <div class="flex items-center justify-between gap-3">
-          <h2 class = "text-2xl text-white">Альбомы</h2>
-          <div class="flex items-center gap-2">
-            <button type="button" data-action="horizontal-scroll#scrollPrevious" data-horizontal-scroll-target="previousButton" class="rounded-full bg-neutral-800/90 p-1.5 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-default transition-colors" title="Назад">
-              <%= image_tag 'left.svg', class: 'w-5 h-5' %>
-            </button>
-            <button type="button" data-action="horizontal-scroll#scrollNext" data-horizontal-scroll-target="nextButton" class="rounded-full bg-neutral-800/90 p-1.5 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-default transition-colors" title="Вперёд">
-              <%= image_tag 'right.svg', class: 'w-5 h-5' %>
-            </button>
-          </div>
-        </div>
-        <div class = "flex flex-row gap-5 mt-3 py-1 px-1 overflow-x-auto" data-horizontal-scroll-target="scroller" data-action="wheel->horizontal-scroll#scrollByWheel scroll->horizontal-scroll#updateButtons">
-          <% @user_albums.each do |album| %>
-            <%= render 'shared/album_card', album: album %>
+
+        <div class="follow-button h-10 mt-3">
+          <% if current_user.following?(@artist) %>
+            <%= button_to "Вы подписаны", unfollow_path(@artist), method: :delete, class: "bg-green-400 flex gap-1 justify-center items-center text-black hover:text-neutral-300 hover:cursor-pointer border border-solid rounded-2xl border-green-400 pt-1 pb-1 ps-3 pe-3 transition-colors duration-700" %>
+          <% else %>
+            <%= button_to "+ Подписаться", follow_path(@artist), method: :post, class: "bg-neutral-800 flex gap-2 justify-center items-center hover:text-neutral-300 hover:cursor-pointer border border-solid rounded-2xl border-green-400 pt-1 pb-1 ps-3 pe-3 text-white transition-colors duration-700" %>
           <% end %>
         </div>
       </div>
     </div>
-
-    <div class = "similar-artists">
-
-    </div>
   </div>
-<% else %>
 
-  <div class = "flex justify-center items-center text-2xl text-white gap-3 mt-30">
-    <%= image_tag 'not-found.svg', class: "w-30 h-30 object-cover rounded-2xl"  %>
-    Пользователь не найден
+  <div class="artist-content">
+    <% if @popular_tracks.blank? && @artist_albums.blank? %>
+      <%= render "shared/empty_state",
+                 title: "У исполнителя пока нет музыки",
+                 description: "Когда модераторы загрузят треки или альбомы, они появятся на этой странице." %>
+    <% else %>
+      <% if @popular_tracks.present? %>
+        <div class="popular-tracks section ml-5 mr-5 mt-5" data-controller="horizontal-scroll" data-playback-queue-name-value="Популярные треки — <%= @artist.name %>" data-playback-context-type-value="artist-popular" data-playback-context-id-value="<%= @artist.id %>" data-playback-context-url-value="<%= profile_path(@artist) %>">
+          <div class="flex items-center justify-between gap-3">
+            <h2 class="text-2xl text-white">Популярные треки</h2>
+            <div class="flex items-center gap-2">
+              <button type="button" data-action="horizontal-scroll#scrollPrevious" data-horizontal-scroll-target="previousButton" class="rounded-full bg-neutral-800/90 p-1.5 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-default transition-colors" title="Назад">
+                <%= image_tag "left.svg", class: "w-5 h-5" %>
+              </button>
+              <button type="button" data-action="horizontal-scroll#scrollNext" data-horizontal-scroll-target="nextButton" class="rounded-full bg-neutral-800/90 p-1.5 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-default transition-colors" title="Вперёд">
+                <%= image_tag "right.svg", class: "w-5 h-5" %>
+              </button>
+            </div>
+          </div>
+          <div class="tracks flex flex-row gap-5 mt-3 py-1 px-1 overflow-x-auto" data-horizontal-scroll-target="scroller" data-action="wheel->horizontal-scroll#scrollByWheel scroll->horizontal-scroll#updateButtons">
+            <% @popular_tracks.each do |track| %>
+              <%= render "shared/track_card", track: track %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <% if @artist_albums.present? %>
+        <div class="albums section ml-5 mr-5 mt-5" data-controller="horizontal-scroll">
+          <div class="flex items-center justify-between gap-3">
+            <h2 class="text-2xl text-white">Альбомы</h2>
+            <div class="flex items-center gap-2">
+              <button type="button" data-action="horizontal-scroll#scrollPrevious" data-horizontal-scroll-target="previousButton" class="rounded-full bg-neutral-800/90 p-1.5 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-default transition-colors" title="Назад">
+                <%= image_tag "left.svg", class: "w-5 h-5" %>
+              </button>
+              <button type="button" data-action="horizontal-scroll#scrollNext" data-horizontal-scroll-target="nextButton" class="rounded-full bg-neutral-800/90 p-1.5 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-default transition-colors" title="Вперёд">
+                <%= image_tag "right.svg", class: "w-5 h-5" %>
+              </button>
+            </div>
+          </div>
+          <div class="flex flex-row gap-5 mt-3 py-1 px-1 overflow-x-auto" data-horizontal-scroll-target="scroller" data-action="wheel->horizontal-scroll#scrollByWheel scroll->horizontal-scroll#updateButtons">
+            <% @artist_albums.each do |album| %>
+              <%= render "shared/album_card", album: album %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
   </div>
-<% end %>
+</div>

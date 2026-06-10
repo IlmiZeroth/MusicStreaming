@@ -1,0 +1,61 @@
+<%= render "shared/header" %>
+
+<div class="text-white px-6 py-6 mb-28">
+  <div class="flex items-center justify-between gap-4 mb-6">
+    <div>
+      <h1 class="text-3xl font-bold">Панель модерации</h1>
+      <p class="text-neutral-400 mt-1">Здесь модераторы управляют артистами, альбомами и треками.</p>
+    </div>
+    <div class="flex gap-2 flex-wrap justify-end">
+      <%= link_to "Артисты", moderation_artists_path, class: "bg-neutral-800 hover:bg-neutral-700 px-4 py-2 rounded-2xl" %>
+      <%= link_to "Альбомы", moderation_albums_path, class: "bg-neutral-800 hover:bg-neutral-700 px-4 py-2 rounded-2xl" %>
+      <%= link_to "Треки", moderation_tracks_path, class: "bg-neutral-800 hover:bg-neutral-700 px-4 py-2 rounded-2xl" %>
+      <% if current_user.admin? %>
+        <%= link_to "Админ-панель", admin_root_path, class: "bg-green-500 hover:bg-green-400 text-black px-4 py-2 rounded-2xl" %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+    <div class="bg-neutral-800 rounded-2xl p-4"><div class="text-neutral-400">Артисты</div><div class="text-3xl font-bold"><%= @artists_count %></div></div>
+    <div class="bg-neutral-800 rounded-2xl p-4"><div class="text-neutral-400">Альбомы</div><div class="text-3xl font-bold"><%= @albums_count %></div></div>
+    <div class="bg-neutral-800 rounded-2xl p-4"><div class="text-neutral-400">Треки</div><div class="text-3xl font-bold"><%= @tracks_count %></div></div>
+    <div class="bg-neutral-800 rounded-2xl p-4"><div class="text-neutral-400">Ошибки анализа</div><div class="text-3xl font-bold"><%= @failed_tracks_count %></div></div>
+  </div>
+
+  <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+    <div class="bg-neutral-800 rounded-2xl p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-2xl font-bold">Новые альбомы</h2>
+        <%= link_to "+ Альбом", new_moderation_album_path, class: "text-green-400 hover:text-green-300" %>
+      </div>
+      <% @recent_albums.each do |album| %>
+        <div class="flex justify-between border-b border-neutral-700 py-3">
+          <div>
+            <div><%= link_to album.name, album_path(album), class: "hover:underline" %></div>
+            <div class="text-neutral-400 text-sm"><%= album.artist.name %> · <%= album.tracks_count %> треков</div>
+          </div>
+          <%= link_to "Редактировать", edit_moderation_album_path(album), class: "text-neutral-300 hover:text-white" %>
+        </div>
+      <% end %>
+      <% if @recent_albums.empty? %><p class="text-neutral-400">Альбомов пока нет.</p><% end %>
+    </div>
+
+    <div class="bg-neutral-800 rounded-2xl p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-2xl font-bold">Новые треки</h2>
+        <%= link_to "+ Трек", new_moderation_track_path, class: "text-green-400 hover:text-green-300" %>
+      </div>
+      <% @recent_tracks.each do |track| %>
+        <div class="flex justify-between border-b border-neutral-700 py-3">
+          <div>
+            <div><%= track.name %></div>
+            <div class="text-neutral-400 text-sm"><%= track.artist.name %> · <%= track.album.name %> · <%= track.audio_analysis_status %></div>
+          </div>
+          <%= link_to "Редактировать", edit_moderation_track_path(track), class: "text-neutral-300 hover:text-white" %>
+        </div>
+      <% end %>
+      <% if @recent_tracks.empty? %><p class="text-neutral-400">Треков пока нет.</p><% end %>
+    </div>
+  </div>
+</div>

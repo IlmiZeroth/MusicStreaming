@@ -1,0 +1,43 @@
+<%= render "shared/header" %>
+
+<div class="text-white px-6 py-6 mb-28">
+  <div class="flex items-center justify-between gap-4 mb-6">
+    <div>
+      <h1 class="text-3xl font-bold">Треки</h1>
+      <p class="text-neutral-400 mt-1">Загрузка аудио и контроль статуса waveform-анализа.</p>
+    </div>
+    <div class="flex gap-2">
+      <%= link_to "+ Трек", new_moderation_track_path, class: "bg-green-500 hover:bg-green-400 text-black px-4 py-2 rounded-2xl" %>
+      <%= link_to "Панель модерации", moderation_root_path, class: "bg-neutral-800 hover:bg-neutral-700 px-4 py-2 rounded-2xl" %>
+    </div>
+  </div>
+
+  <div class="bg-neutral-800 rounded-2xl p-5 overflow-x-auto">
+    <table class="w-full text-left">
+      <thead class="text-neutral-400 border-b border-neutral-700">
+        <tr><th class="py-2">Трек</th><th>Артист</th><th>Альбом</th><th>№</th><th>Waveform</th><th>Стримы</th><th></th></tr>
+      </thead>
+      <tbody>
+        <% @tracks.each do |track| %>
+          <tr class="border-b border-neutral-700/60">
+            <td class="py-3"><%= track.name %></td>
+            <td><%= link_to track.artist.name, profile_path(track.artist), class: "text-neutral-300 hover:text-white" %></td>
+            <td><%= link_to track.album.name, album_path(track.album), class: "text-neutral-300 hover:text-white" %></td>
+            <td><%= track.number_in_album %></td>
+            <td>
+              <span class="bg-neutral-700 px-3 py-1 rounded-2xl <%= 'text-red-300' if track.audio_analysis_status == 'failed' %>">
+                <%= track.audio_analysis_status %>
+              </span>
+            </td>
+            <td><%= track.streams %></td>
+            <td class="flex gap-2 justify-end">
+              <%= link_to "Редактировать", edit_moderation_track_path(track), class: "text-neutral-300 hover:text-white" %>
+              <%= button_to "Удалить", moderation_track_path(track), method: :delete, data: { turbo_confirm: "Удалить трек #{track.name}?" }, class: "text-red-300 hover:text-red-200 cursor-pointer" %>
+            </td>
+          </tr>
+        <% end %>
+        <% if @tracks.empty? %><tr><td colspan="7" class="py-6 text-neutral-400">Треков пока нет.</td></tr><% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

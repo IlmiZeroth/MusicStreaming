@@ -1,0 +1,7 @@
+<div class="m-5 rounded-2xl bg-neutral-800 p-8 text-center text-neutral-300 flex flex-col items-center gap-3">
+  <%= image_tag "not-found.svg", class: "w-28 h-28 opacity-80", alt: "Пусто" %>
+  <div class="text-xl text-white"><%= title %></div>
+  <% if local_assigns[:description].present? %>
+    <div class="max-w-xl text-neutral-400"><%= description %></div>
+  <% end %>
+</div>

@@ -39,3 +39,6 @@ application.register("smart-back", SmartBackController)
 
 import PreviewController from "./preview_controller"
 application.register("preview", PreviewController)
+
+import EntitySearchController from "./entity_search_controller"
+application.register("entity-search", EntitySearchController)

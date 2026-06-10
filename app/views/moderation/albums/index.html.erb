@@ -1,0 +1,39 @@
+<%= render "shared/header" %>
+
+<div class="text-white px-6 py-6 mb-28">
+  <div class="flex items-center justify-between gap-4 mb-6">
+    <div>
+      <h1 class="text-3xl font-bold">Альбомы</h1>
+      <p class="text-neutral-400 mt-1">Альбомы больше не создаются обычными пользователями — этим занимается модерация.</p>
+    </div>
+    <div class="flex gap-2">
+      <%= link_to "+ Альбом", new_moderation_album_path, class: "bg-green-500 hover:bg-green-400 text-black px-4 py-2 rounded-2xl" %>
+      <%= link_to "Панель модерации", moderation_root_path, class: "bg-neutral-800 hover:bg-neutral-700 px-4 py-2 rounded-2xl" %>
+    </div>
+  </div>
+
+  <div class="bg-neutral-800 rounded-2xl p-5 overflow-x-auto">
+    <table class="w-full text-left">
+      <thead class="text-neutral-400 border-b border-neutral-700">
+        <tr><th class="py-2">Альбом</th><th>Артист</th><th>Дата</th><th>Треки</th><th>Стримы</th><th></th></tr>
+      </thead>
+      <tbody>
+        <% @albums.each do |album| %>
+          <tr class="border-b border-neutral-700/60">
+            <td class="py-3"><%= link_to album.name, album_path(album), class: "hover:underline" %></td>
+            <td><%= link_to album.artist.name, profile_path(album.artist), class: "text-neutral-300 hover:text-white" %></td>
+            <td class="text-neutral-300"><%= album.release_date %></td>
+            <td><%= album.tracks_count %></td>
+            <td><%= album.total_streams %></td>
+            <td class="flex gap-2 justify-end">
+              <%= link_to "+ Трек", new_moderation_track_path(album_id: album.id), class: "text-green-400 hover:text-green-300" %>
+              <%= link_to "Редактировать", edit_moderation_album_path(album), class: "text-neutral-300 hover:text-white" %>
+              <%= button_to "Удалить", moderation_album_path(album), method: :delete, data: { turbo_confirm: "Удалить альбом #{album.name} вместе с треками?" }, class: "text-red-300 hover:text-red-200 cursor-pointer" %>
+            </td>
+          </tr>
+        <% end %>
+        <% if @albums.empty? %><tr><td colspan="6" class="py-6 text-neutral-400">Альбомов пока нет.</td></tr><% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

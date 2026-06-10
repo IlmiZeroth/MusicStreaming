@@ -5,7 +5,7 @@
 
 <div data-controller="track-card"
      data-track-card-id-value="<%= track.id %>"
-     data-track-card-artist-value="<%= track.user.username %>"
+     data-track-card-artist-value="<%= track.artist.name %>"
      data-track-card-name-value="<%= track.name %>"
      data-track-card-url-value="<%= track_audio_url %>"
      data-track-card-metadata-url-value="<%= track_metadata_url %>"
@@ -44,7 +44,7 @@
   <div class="track-name mt-2 truncate w-40" title="<%= track.name %>">
     <%= track.name %>
   </div>
-  <div class="track-artist text-neutral-400 truncate w-40 hover:text-gray-400" title="<%= track.user.username %>">
-    <%= link_to track.user.username, profile_path(track.user.id) %>
+  <div class="track-artist text-neutral-400 truncate w-40 hover:text-gray-400" title="<%= track.artist.name %>">
+    <%= link_to track.artist.name, profile_path(track.artist.id) %>
   </div>
 </div>

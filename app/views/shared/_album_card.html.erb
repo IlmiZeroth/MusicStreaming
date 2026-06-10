@@ -8,7 +8,7 @@
 
 <div data-controller="album-card"
      data-album-card-id-value="<%= first_track&.id %>"
-     data-album-card-artist-value="<%= album.user.username %>"
+     data-album-card-artist-value="<%= album.artist.name %>"
      data-album-card-name-value="<%= first_track&.name || album.name %>"
      data-album-card-url-value="<%= first_track_audio_url %>"
      data-album-card-metadata-url-value="<%= first_track_metadata_url %>"
@@ -67,7 +67,7 @@
     <%= link_to album.name, album_path(album), class: "hover:underline" %>
   </div>
 
-  <div class="album-artist text-neutral-400 truncate w-40 hover:text-gray-400" title="<%= album.user.username %>">
-    <%= link_to album.user.username, profile_path(album.user.id) %>
+  <div class="album-artist text-neutral-400 truncate w-40 hover:text-gray-400" title="<%= album.artist.name %>">
+    <%= link_to album.artist.name, profile_path(album.artist.id) %>
   </div>
 </div>

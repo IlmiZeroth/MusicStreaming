@@ -3,36 +3,61 @@ class TracksController < PagesController
 
   AUDIO_CHUNK_SIZE = 512.kilobytes
 
-  before_action :set_user, only: [:update, :destroy]
-  before_action :authorize_settings_access!, only: [:update, :destroy]
-  before_action :set_track, only: [:audio, :metadata, :stream]
+  before_action :set_track, only: [:audio, :metadata, :stream, :update, :destroy]
+  before_action :authorize_track_management!, only: [:create, :update, :destroy]
 
   def create
-    @album = current_user.albums.find_by id: track_params[:album_id]
-    if @album.present?
-      @track = @album.tracks.build(track_params.merge(duration: 1, audio_analysis_status: "pending"))
-      if @track.save
-        AnalyzeTrackAudioJob.perform_later(@track.id)
-        redirect_to album_path(@album), notice: "Track was successfully created. Metadata analysis has started."
-      else
-        redirect_to album_path(@album), alert: "Track was not created."
-      end
+    @album = Album.find_by(id: track_params[:album_id])
+    unless @album.present?
+      redirect_to moderation_albums_path, alert: "Альбом не найден."
+      return
+    end
+
+    @track = @album.tracks.build(track_params.merge(duration: 1, audio_analysis_status: "pending"))
+
+    if @track.save
+      AnalyzeTrackAudioJob.perform_later(@track.id) if @track.audio_file.attached?
+      audit!("moderation.track.created", @track, name: @track.name, album_id: @track.album_id)
+      redirect_to album_path(@album), notice: "Трек создан. Анализ waveform поставлен в очередь."
     else
-      redirect_to studio_path, alert: "Album was not found."
+      redirect_to album_path(@album), alert: @track.errors.full_messages.to_sentence
     end
   end
 
   def destroy
-    @track = Track.find(params[:id])
     @album = @track.album
+    track_id = @track.id
+    track_name = @track.name
+
     if @track.destroy
-      redirect_to album_path(@album), notice: "Track was successfully deleted."
+      audit!("moderation.track.deleted", nil, track_id: track_id, name: track_name)
+      redirect_to album_path(@album), notice: "Трек удалён."
     else
-      redirect_to album_path(@album), alert: "Track was not deleted."
+      redirect_to album_path(@album), alert: @track.errors.full_messages.to_sentence
     end
   end
 
   def update
+    audio_replaced = track_params[:audio_file].present?
+
+    if @track.update(track_params)
+      if audio_replaced
+        @track.update_columns(
+          audio_analysis_status: "pending",
+          audio_analysis_error: nil,
+          audio_peaks: nil,
+          audio_peaks_version: nil,
+          audio_analyzed_at: nil,
+          updated_at: Time.current
+        )
+        AnalyzeTrackAudioJob.perform_later(@track.id) if @track.audio_file.attached?
+      end
+
+      audit!("moderation.track.updated", @track, name: @track.name, album_id: @track.album_id, audio_replaced: audio_replaced)
+      redirect_to album_path(@track.album), notice: "Трек обновлён."
+    else
+      redirect_to album_path(@track.album), alert: @track.errors.full_messages.to_sentence
+    end
   end
 
   # HTML5 audio endpoint. It supports Range requests, so the browser can request
@@ -87,6 +112,10 @@ class TracksController < PagesController
 
   def set_track
     @track = Track.find(params[:id])
+  end
+
+  def authorize_track_management!
+    authorize Track, :manage?
   end
 
   def analyzed_duration
@@ -158,22 +187,6 @@ class TracksController < PagesController
   def range_not_satisfiable(byte_size)
     response.headers["Content-Range"] = "bytes */#{byte_size}"
     head :range_not_satisfiable
-  end
-
-  def set_user
-    @track = Track.find(params[:id])
-    @album = @track.album
-    @user = @track.user
-    unless @user.present?
-      redirect_to studio_path, alert: "Пользователь не найден"
-    end
-  end
-
-  def authorize_settings_access!
-    unless UserPolicy.new(current_user, @user).settings?
-      flash[:alert] = "У вас нет доступа к альбомам этого пользователя!"
-      redirect_to studio_path
-    end
   end
 
   def track_params

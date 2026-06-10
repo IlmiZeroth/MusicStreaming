@@ -1,17 +1,35 @@
 require "sidekiq/web"
 
 Rails.application.routes.draw do
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
   devise_for :users, controllers: { registrations: "users/registrations" }
 
   authenticate :user, ->(user) { user.admin? } do
     mount Sidekiq::Web => "/sidekiq"
   end
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify if the app is live.
+
   get "up" => "rails/health#show", as: :rails_health_check
+  get "search" => "search#index", as: :search
+
+  namespace :admin do
+    root "dashboard#index"
+    resources :users, only: [:index, :update]
+    resources :audit_logs, only: [:index]
+  end
+
+  namespace :moderation do
+    root "dashboard#index"
+    resources :artists, except: [:show] do
+      collection { get :search }
+    end
+    resources :albums, except: [:show] do
+      collection { get :search }
+    end
+    resources :tracks, except: [:show]
+  end
+
   get "studio" => "studio#index", as: :studio
   root "pages#index"
+
   post "followers/:id", to: "followers#create", as: :follow
   delete "followers/:id", to: "followers#destroy", as: :unfollow
 

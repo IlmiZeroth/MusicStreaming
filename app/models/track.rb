@@ -1,6 +1,6 @@
 class Track < ApplicationRecord
   belongs_to :album
-  has_one :user, through: :album
+  has_one :artist, through: :album
 
   has_many :playlist_tracks, dependent: :destroy
   has_many :playlists, through: :playlist_tracks

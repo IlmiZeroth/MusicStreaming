@@ -4,7 +4,7 @@ class PlaylistsController < ApplicationController
   before_action :set_playlist, only: [:show]
 
   def show
-    @playlist_tracks = @playlist.playlist_tracks.includes(track: [:user, { album: { cover_image_attachment: :blob } }]).order(:position)
+    @playlist_tracks = @playlist.playlist_tracks.includes(track: [{ album: [:artist, { cover_image_attachment: :blob }] }]).order(:position)
     @tracks = @playlist_tracks.map(&:track).compact
     @user = @playlist.user
     @show_actions = UserPolicy.new(current_user, @user).settings?

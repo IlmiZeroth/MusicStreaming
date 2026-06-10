@@ -1,0 +1,30 @@
+<% if @artist.errors.any? %>
+  <div class="bg-red-500/20 border border-red-400 rounded-2xl p-4 mb-4 text-red-100">
+    <div class="font-bold mb-2">Не удалось сохранить артиста:</div>
+    <ul class="list-disc ml-5">
+      <% @artist.errors.full_messages.each do |message| %><li><%= message %></li><% end %>
+    </ul>
+  </div>
+<% end %>
+
+<%= form_with model: [:moderation, @artist], local: true, html: { multipart: true, class: "bg-neutral-800 rounded-2xl p-5 flex flex-col gap-4 max-w-3xl" } do |f| %>
+  <div class="flex flex-col gap-1">
+    <%= f.label :name, "Имя артиста *" %>
+    <%= f.text_field :name, required: true, class: "bg-neutral-700 rounded-xl px-3 py-2" %>
+  </div>
+
+  <div class="flex flex-col gap-1">
+    <%= f.label :description, "Описание" %>
+    <%= f.text_area :description, rows: 4, class: "bg-neutral-700 rounded-xl px-3 py-2" %>
+  </div>
+
+  <div class="flex flex-col gap-1">
+    <%= f.label :avatar, "Аватар" %>
+    <%= f.file_field :avatar, accept: "image/png,image/jpeg,image/jpg,image/webp", class: "bg-neutral-700 rounded-xl px-3 py-2 file:bg-neutral-400 file:rounded-xl file:px-3" %>
+  </div>
+
+  <div class="flex gap-3">
+    <%= f.submit @artist.persisted? ? "Сохранить" : "Создать артиста", class: "bg-green-500 hover:bg-green-400 text-black px-4 py-2 rounded-2xl cursor-pointer" %>
+    <%= link_to "Отмена", moderation_artists_path, class: "bg-neutral-700 hover:bg-neutral-600 px-4 py-2 rounded-2xl" %>
+  </div>
+<% end %>

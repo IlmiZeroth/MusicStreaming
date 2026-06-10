@@ -36,7 +36,7 @@
 
       <div class="playlist-stats flex h-7 gap-3 mt-3">
         <div class="owner text-white bg-neutral-800 ps-3 pe-3 rounded-2xl truncate max-w-56" title="<%= @playlist.user.username %>">
-          <%= link_to @playlist.user.username, profile_path(@playlist.user), class: "hover:underline" %>
+          <%= @playlist.user.username %>
         </div>
         <div class="tracks-count text-white bg-neutral-800 ps-3 pe-3 rounded-2xl"><%= number_with_delimiter @tracks.size %> треков</div>
       </div>

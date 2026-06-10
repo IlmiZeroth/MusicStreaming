@@ -9,7 +9,7 @@
       <% end %>
     <% end %>
 
-    <% if local_assigns[:show_actions] && current_user != artist %>
+    <% if local_assigns[:show_actions] %>
       <% following = current_user.following?(artist) %>
       <%= button_tag type: "button",
                      class: "absolute top-2 right-2 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-neutral-900/90 shadow-xl hover:bg-neutral-700 transition-colors hover:cursor-pointer",
@@ -34,6 +34,6 @@
   </div>
 
   <div class="artist-name mt-2 truncate w-40">
-    <%= link_to artist.username, profile_path(artist), class: "hover:underline" %>
+    <%= link_to artist.name, profile_path(artist), class: "hover:underline" %>
   </div>
 </div>
