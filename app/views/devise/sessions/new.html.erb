@@ -1,18 +1,16 @@
-<div class = "mr-20 mb-5">
-      <h1 class = "text-4xl text-white font-bold">С возвращением</h1>
-      <h2 class = "text-xl text-neutral-400 mt-1">Войдите в аккаунт</h2>
-</div>
-  <%= form_for(resource, as: resource_name, url: session_path(resource_name),
-               html: {class: ''}) do |f| %>
-    <div class="field mt-4 text-neutral-600 bg-neutral-700 rounded-md h-10 w-80">
-      <%= f.text_field :login, autofocus: true, placeholder: "Email или логин", class: "h-full w-full text-neutral-400 px-3" %>
-    </div>
-
-    <div class="field mt-4 text-neutral-600 bg-neutral-700 rounded-md h-10 w-80">
-      <%= f.password_field :password, placeholder: "Пароль", class: "h-full w-full text-neutral-400 px-3" %>
-    </div>
-
-    <%= f.submit "Войти", class: "mt-8 w-80 h-10 text-white rounded-xl bg-green-500
-        hover:bg-green-400 transition-colors duration-300" %>
+<div class="mb-6 text-center sm:text-left">
+  <%= link_to root_path, class: "mb-6 inline-flex items-center gap-3" do %>
+    <span class="flex h-10 w-10 overflow-hidden rounded-2xl bg-neutral-950 ring-1 ring-neutral-800"><%= image_tag "site-icon.png", class: "h-full w-full object-cover", alt: "MusicStreaming" %></span>
+    <span class="font-black text-white">MusicStreaming</span>
   <% end %>
-  <%= render "devise/shared/links" %>
+  <h1 class="text-3xl font-black text-white sm:text-4xl">С возвращением</h1>
+  <p class="mt-2 text-neutral-400">Войдите по email или логину.</p>
+</div>
+
+<%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "grid gap-4" }) do |f| %>
+  <%= f.text_field :login, autofocus: true, placeholder: "Email или логин", class: "w-full rounded-2xl border border-neutral-800 bg-neutral-950/70 px-4 py-3 text-white outline-none placeholder:text-neutral-500 focus:border-green-400" %>
+  <%= f.password_field :password, placeholder: "Пароль", class: "w-full rounded-2xl border border-neutral-800 bg-neutral-950/70 px-4 py-3 text-white outline-none placeholder:text-neutral-500 focus:border-green-400" %>
+  <%= f.submit "Войти", class: "mt-2 rounded-2xl bg-green-400 px-5 py-3 font-bold text-black transition hover:bg-green-300 cursor-pointer" %>
+<% end %>
+
+<%= render "devise/shared/links" %>

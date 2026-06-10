@@ -1,34 +1,52 @@
 # frozen_string_literal: true
 
 class Users::PasswordsController < Devise::PasswordsController
-  # GET /resource/password/new
-  # def new
-  #   super
-  # end
+  # POST /users/password
+  # В проекте нет внешнего SMTP: вместо настоящей отправки письма создаём
+  # внутреннее сообщение, которое администратор видит в /admin/mail_messages.
+  def create
+    email = resource_params[:email].to_s.downcase.strip
+    user = resource_class.find_by(email: email)
 
-  # POST /resource/password
-  # def create
-  #   super
-  # end
+    create_internal_reset_message!(user, email) if user.present?
 
-  # GET /resource/password/edit?reset_password_token=abcdef
-  # def edit
-  #   super
-  # end
+    flash[:notice] = "Если аккаунт с таким email существует, письмо придет к вам на почту в течении 30 минут."
+    redirect_to new_user_session_path
+  end
 
-  # PUT /resource/password
-  # def update
-  #   super
-  # end
+  private
 
-  # protected
+  def create_internal_reset_message!(user, email)
+    raw_token = user.send(:set_reset_password_token)
+    reset_url = edit_user_password_url(reset_password_token: raw_token)
 
-  # def after_resetting_password_path_for(resource)
-  #   super(resource)
-  # end
+    AdminMailMessage.create!(
+      recipient: user,
+      recipient_email: email,
+      subject: "Восстановление пароля для #{user.username}",
+      message_type: "password_reset",
+      body: internal_reset_body(user, reset_url),
+      metadata: {
+        reset_url: reset_url,
+        user_id: user.id,
+        username: user.username,
+        requested_ip: request.remote_ip,
+        user_agent: request.user_agent.to_s.truncate(500)
+      }
+    )
+  end
 
-  # The path used after sending reset password instructions
-  # def after_sending_reset_password_instructions_path_for(resource_name)
-  #   super(resource_name)
-  # end
+  def internal_reset_body(user, reset_url)
+    <<~TEXT.strip
+      Пользователь запросил восстановление пароля.
+
+      Аккаунт: #{user.username}
+      Email: #{user.email}
+
+      Ссылка для восстановления пароля:
+      #{reset_url}
+
+      Эту ссылку может использовать владелец аккаунта для установки нового пароля.
+    TEXT
+  end
 end

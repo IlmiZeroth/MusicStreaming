@@ -1,51 +1,47 @@
 <%= render "shared/header" %>
 
-<div class="text-white px-6 py-6 mb-28">
-  <div class="flex items-center justify-between gap-4 mb-6">
-    <div>
-      <h1 class="text-3xl font-bold">Админ-панель</h1>
-      <p class="text-neutral-400 mt-1">Управление ролями и журналом действий.</p>
+<main class="<%= page_shell_class %>">
+  <section class="rounded-[2rem] border border-neutral-800 bg-neutral-900/70 p-5 shadow-xl shadow-black/20 sm:p-7">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <div>
+        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-green-300">Администрирование</p>
+        <h1 class="mt-2 text-3xl font-black text-white sm:text-4xl">Админ-панель</h1>
+        <p class="mt-2 text-neutral-400">Управление пользователями, внутренними письмами и журналом действий.</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <%= link_to "Пользователи", admin_users_path, class: primary_button_class %>
+        <% mail_label = @unread_mail_messages_count.to_i.positive? ? "Письма (#{@unread_mail_messages_count})" : "Письма" %>
+        <%= link_to mail_label, admin_mail_messages_path, class: secondary_button_class %>
+        <%= link_to "Логи", admin_audit_logs_path, class: secondary_button_class %>
+        <%= link_to "Модерация", moderation_root_path, class: secondary_button_class %>
+      </div>
     </div>
-    <div class="flex gap-2">
-      <%= link_to "Пользователи", admin_users_path, class: "bg-green-500 hover:bg-green-400 text-black px-4 py-2 rounded-2xl" %>
-      <%= link_to "Логи", admin_audit_logs_path, class: "bg-neutral-800 hover:bg-neutral-700 px-4 py-2 rounded-2xl" %>
-      <%= link_to "Модерация", moderation_root_path, class: "bg-neutral-800 hover:bg-neutral-700 px-4 py-2 rounded-2xl" %>
-    </div>
-  </div>
+  </section>
 
-  <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-    <div class="bg-neutral-800 rounded-2xl p-4"><div class="text-neutral-400">Пользователи</div><div class="text-3xl font-bold"><%= @users_count %></div></div>
-    <div class="bg-neutral-800 rounded-2xl p-4"><div class="text-neutral-400">Модераторы</div><div class="text-3xl font-bold"><%= @moderators_count %></div></div>
-    <div class="bg-neutral-800 rounded-2xl p-4"><div class="text-neutral-400">Админы</div><div class="text-3xl font-bold"><%= @admins_count %></div></div>
-    <div class="bg-neutral-800 rounded-2xl p-4"><div class="text-neutral-400">Артисты</div><div class="text-3xl font-bold"><%= @artists_count %></div></div>
-    <div class="bg-neutral-800 rounded-2xl p-4"><div class="text-neutral-400">Альбомы</div><div class="text-3xl font-bold"><%= @albums_count %></div></div>
-    <div class="bg-neutral-800 rounded-2xl p-4"><div class="text-neutral-400">Треки</div><div class="text-3xl font-bold"><%= @tracks_count %></div></div>
-  </div>
+  <section class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
+    <% [["Пользователи", @users_count], ["Модераторы", @moderators_count], ["Админы", @admins_count], ["Письма", @mail_messages_count], ["Непрочитанные", @unread_mail_messages_count], ["Треки", @tracks_count]].each do |label, value| %>
+      <div class="rounded-[1.5rem] border border-neutral-800 bg-neutral-900/70 p-4">
+        <div class="text-sm text-neutral-500"><%= label %></div>
+        <div class="mt-2 text-3xl font-black text-white"><%= value %></div>
+      </div>
+    <% end %>
+  </section>
 
-  <div class="bg-neutral-800 rounded-2xl p-5">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-2xl font-bold">Последние действия</h2>
-      <%= link_to "Все логи", admin_audit_logs_path, class: "text-green-400 hover:text-green-300" %>
+  <section class="mt-6 rounded-[2rem] border border-neutral-800 bg-neutral-900/70 p-5 shadow-xl shadow-black/20 sm:p-6">
+    <div class="mb-4 flex items-center justify-between gap-3">
+      <h2 class="text-2xl font-bold text-white">Последние действия</h2>
+      <%= link_to "Все логи", admin_audit_logs_path, class: "text-sm font-semibold text-green-300 hover:text-green-200" %>
     </div>
     <div class="overflow-x-auto">
-      <table class="w-full text-left">
-        <thead class="text-neutral-400 border-b border-neutral-700">
-          <tr><th class="py-2">Дата</th><th>Кто</th><th>Действие</th><th>Объект</th></tr>
-        </thead>
-        <tbody>
+      <table class="w-full min-w-[720px] text-left text-sm">
+        <thead class="border-b border-neutral-800 text-neutral-500"><tr><th class="py-3 font-medium">Дата</th><th class="font-medium">Кто</th><th class="font-medium">Действие</th><th class="font-medium">Объект</th></tr></thead>
+        <tbody class="divide-y divide-neutral-800/80">
           <% @recent_logs.each do |log| %>
-            <tr class="border-b border-neutral-700/60">
-              <td class="py-2 text-neutral-300"><%= l(log.created_at, format: :short) %></td>
-              <td><%= log.actor_name %></td>
-              <td><%= log.action %></td>
-              <td class="text-neutral-300"><%= log.auditable_name %></td>
-            </tr>
+            <tr><td class="py-3 text-neutral-300"><%= l(log.created_at, format: :short) %></td><td class="text-white"><%= log.actor_name %></td><td class="text-neutral-300"><%= log.action %></td><td class="text-neutral-400"><%= log.auditable_name %></td></tr>
           <% end %>
-          <% if @recent_logs.empty? %>
-            <tr><td colspan="4" class="py-6 text-neutral-400">Логов пока нет.</td></tr>
-          <% end %>
+          <% if @recent_logs.empty? %><tr><td colspan="4" class="py-8 text-neutral-400">Логов пока нет.</td></tr><% end %>
         </tbody>
       </table>
     </div>
-  </div>
-</div>
+  </section>
+</main>

@@ -1,0 +1,46 @@
+<%= render "shared/header" %>
+
+<main class="<%= page_shell_class %>">
+  <section class="rounded-[2rem] border border-neutral-800 bg-neutral-900/70 p-5 shadow-xl shadow-black/20 sm:p-7">
+    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-green-300">Поиск</p>
+    <h1 class="mt-2 text-3xl font-black text-white sm:text-4xl">Найдите музыку</h1>
+    <% if @query.present? %>
+      <p class="mt-2 text-neutral-400">Результаты по запросу «<span class="text-white"><%= @query %></span>»</p>
+    <% else %>
+      <p class="mt-2 text-neutral-400">Введите название трека, альбома или имя артиста.</p>
+    <% end %>
+  </section>
+
+  <% if @query.blank? %>
+    <%= render "shared/empty_state", title: "Начните поиск", description: "Поиск работает по артистам, альбомам и названиям треков." %>
+  <% elsif @artists.blank? && @albums.blank? && @tracks.blank? %>
+    <%= render "shared/empty_state", title: "Ничего не найдено", description: "Попробуйте изменить запрос или проверить опечатки." %>
+  <% else %>
+    <% if @artists.present? %>
+      <section class="mt-8">
+        <div class="mb-4"><p class="text-sm text-neutral-500">Совпадения по имени</p><h2 class="text-2xl font-bold text-white">Артисты</h2></div>
+        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+          <% @artists.each do |artist| %><%= render "shared/artist_card", artist: artist %><% end %>
+        </div>
+      </section>
+    <% end %>
+
+    <% if @albums.present? %>
+      <section class="mt-8">
+        <div class="mb-4"><p class="text-sm text-neutral-500">Релизы</p><h2 class="text-2xl font-bold text-white">Альбомы</h2></div>
+        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+          <% @albums.each do |album| %><%= render "shared/album_card", album: album %><% end %>
+        </div>
+      </section>
+    <% end %>
+
+    <% if @tracks.present? %>
+      <section class="mt-8" data-playback-queue-name-value="Поиск: <%= @query %>">
+        <div class="mb-4"><p class="text-sm text-neutral-500">Композиции</p><h2 class="text-2xl font-bold text-white">Треки</h2></div>
+        <div class="flex flex-col gap-3">
+          <% @tracks.each do |track| %><%= render "shared/track", track: track %><% end %>
+        </div>
+      </section>
+    <% end %>
+  <% end %>
+</main>

@@ -1,7 +1,11 @@
-<div class="m-5 rounded-2xl bg-neutral-800 p-8 text-center text-neutral-300 flex flex-col items-center gap-3">
-  <%= image_tag "not-found.svg", class: "w-28 h-28 opacity-80", alt: "Пусто" %>
-  <div class="text-xl text-white"><%= title %></div>
-  <% if local_assigns[:description].present? %>
-    <div class="max-w-xl text-neutral-400"><%= description %></div>
-  <% end %>
+<div class="mx-auto my-6 flex w-full max-w-2xl flex-col items-center gap-4 rounded-[2rem] border border-neutral-800 bg-neutral-900/70 px-6 py-10 text-center text-neutral-300 shadow-xl shadow-black/10 sm:px-10">
+  <div class="flex h-24 w-24 items-center justify-center rounded-[1.75rem] bg-neutral-950/80 ring-1 ring-neutral-800">
+    <%= image_tag "not-found.svg", class: "h-16 w-16 opacity-85", alt: "Пусто" %>
+  </div>
+  <div>
+    <div class="text-xl font-bold text-white"><%= title %></div>
+    <% if local_assigns[:description].present? %>
+      <div class="mt-2 max-w-xl text-sm leading-6 text-neutral-400 sm:text-base"><%= description %></div>
+    <% end %>
+  </div>
 </div>

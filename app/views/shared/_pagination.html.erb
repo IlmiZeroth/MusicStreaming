@@ -1,0 +1,50 @@
+<% pagination = local_assigns[:pagination] %>
+<% if pagination.present? %>
+  <div class="mt-5 flex flex-col gap-3 border-t border-neutral-800 pt-4 text-sm text-neutral-400 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <% if pagination[:total_count].to_i.positive? %>
+        Показаны <span class="font-semibold text-neutral-200"><%= pagination[:from] %>–<%= pagination[:to] %></span>
+        из <span class="font-semibold text-neutral-200"><%= pagination[:total_count] %></span>
+      <% else %>
+        Записей нет
+      <% end %>
+    </div>
+
+    <% if pagination[:total_pages].to_i > 1 %>
+      <% current_page = pagination[:page].to_i %>
+      <% total_pages = pagination[:total_pages].to_i %>
+      <% raw_pages = ([1, total_pages] + ((current_page - 2)..(current_page + 2)).to_a).select { |page| page.between?(1, total_pages) }.uniq.sort %>
+
+      <nav class="flex flex-wrap items-center gap-2" aria-label="Пагинация">
+        <% previous_page = current_page - 1 %>
+        <% if previous_page >= 1 %>
+          <%= link_to "Назад", url_for(request.query_parameters.merge(page: previous_page, only_path: true)), class: "rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 text-neutral-200 transition hover:border-neutral-600 hover:bg-neutral-900" %>
+        <% else %>
+          <span class="rounded-xl border border-neutral-800 bg-neutral-950/60 px-3 py-2 text-neutral-600">Назад</span>
+        <% end %>
+
+        <% previous_rendered_page = nil %>
+        <% raw_pages.each do |page| %>
+          <% if previous_rendered_page.present? && page - previous_rendered_page > 1 %>
+            <span class="px-1 text-neutral-600">…</span>
+          <% end %>
+
+          <% if page == current_page %>
+            <span class="rounded-xl bg-green-400 px-3 py-2 font-bold text-black"><%= page %></span>
+          <% else %>
+            <%= link_to page, url_for(request.query_parameters.merge(page: page, only_path: true)), class: "rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-neutral-300 transition hover:border-neutral-600 hover:bg-neutral-900 hover:text-white" %>
+          <% end %>
+
+          <% previous_rendered_page = page %>
+        <% end %>
+
+        <% next_page = current_page + 1 %>
+        <% if next_page <= total_pages %>
+          <%= link_to "Вперёд", url_for(request.query_parameters.merge(page: next_page, only_path: true)), class: "rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 text-neutral-200 transition hover:border-neutral-600 hover:bg-neutral-900" %>
+        <% else %>
+          <span class="rounded-xl border border-neutral-800 bg-neutral-950/60 px-3 py-2 text-neutral-600">Вперёд</span>
+        <% end %>
+      </nav>
+    <% end %>
+  </div>
+<% end %>

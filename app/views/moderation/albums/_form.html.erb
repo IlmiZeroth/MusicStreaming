@@ -1,54 +1,29 @@
 <% if @album.errors.any? %>
-  <div class="bg-red-500/20 border border-red-400 rounded-2xl p-4 mb-4 text-red-100">
-    <div class="font-bold mb-2">Не удалось сохранить альбом:</div>
-    <ul class="list-disc ml-5">
-      <% @album.errors.full_messages.each do |message| %><li><%= message %></li><% end %>
-    </ul>
-  </div>
+  <div class="mb-4 rounded-2xl border border-red-400/60 bg-red-500/10 p-4 text-red-100"><div class="font-bold">Не удалось сохранить альбом:</div><ul class="mt-2 list-disc pl-5"><% @album.errors.full_messages.each do |message| %><li><%= message %></li><% end %></ul></div>
 <% end %>
 
-<%= form_with model: [:moderation, @album], local: true, html: { multipart: true, class: "bg-neutral-800 rounded-2xl p-5 flex flex-col gap-4 max-w-3xl" } do |f| %>
+<%= form_with model: [:moderation, @album], local: true, html: { multipart: true, class: "rounded-[2rem] border border-neutral-800 bg-neutral-900/70 p-5 shadow-xl shadow-black/20 sm:p-7 grid gap-5" } do |f| %>
   <% if @album.persisted? %>
-    <div class="flex flex-col gap-1">
-      <span class="text-sm text-neutral-400">Артист</span>
-      <div class="bg-neutral-900 rounded-xl px-3 py-2 text-neutral-200"><%= @album.artist.name %></div>
-      <p class="text-xs text-neutral-500">Артист у альбома не меняется. Если альбом привязан неверно, проще создать новый альбом у нужного артиста.</p>
+    <div>
+      <span class="mb-2 block text-sm text-neutral-400">Артист</span>
+      <div class="rounded-2xl border border-neutral-800 bg-neutral-950/70 px-4 py-3 text-neutral-200"><%= @album.artist.name %></div>
+      <p class="mt-2 text-xs text-neutral-500">Артист у альбома не меняется. Если альбом привязан неверно, проще создать новый альбом у нужного артиста.</p>
     </div>
   <% else %>
-    <div class="relative flex flex-col gap-1" data-controller="entity-search" data-entity-search-url-value="<%= search_moderation_artists_path %>">
-      <%= f.label :artist_id, "Артист *" %>
-      <input type="text"
-             value="<%= @selected_artist&.name %>"
-             placeholder="Начните вводить имя артиста"
-             autocomplete="off"
-             required
-             class="bg-neutral-700 rounded-xl px-3 py-2"
-             data-entity-search-target="input"
-             data-action="input->entity-search#search focus->entity-search#search">
+    <div class="relative" data-controller="entity-search" data-entity-search-url-value="<%= search_moderation_artists_path %>">
+      <%= f.label :artist_id, "Артист *", class: "mb-2 block text-sm text-neutral-400" %>
+      <input type="text" value="<%= @selected_artist&.name %>" placeholder="Начните вводить имя артиста" autocomplete="off" required class="w-full rounded-2xl border border-neutral-800 bg-neutral-950/70 px-4 py-3 text-white outline-none focus:border-green-400" data-entity-search-target="input" data-action="input->entity-search#search focus->entity-search#search">
       <%= f.hidden_field :artist_id, value: @selected_artist&.id, data: { entity_search_target: "hidden" } %>
-      <div class="hidden absolute top-full left-0 right-0 z-30 mt-2 rounded-xl bg-neutral-900 border border-neutral-700 shadow-xl overflow-hidden" data-entity-search-target="results"></div>
-      <p class="text-xs text-neutral-500">Поиск не грузит весь список артистов, поэтому нормально работает и при тысячах записей.</p>
+      <div class="hidden absolute top-full left-0 right-0 z-30 mt-2 overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-950 shadow-2xl" data-entity-search-target="results"></div>
     </div>
   <% end %>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div class="flex flex-col gap-1">
-      <%= f.label :name, "Название альбома *" %>
-      <%= f.text_field :name, required: true, class: "bg-neutral-700 rounded-xl px-3 py-2" %>
-    </div>
-    <div class="flex flex-col gap-1">
-      <%= f.label :release_date, "Дата выпуска *" %>
-      <%= f.date_field :release_date, required: true, class: "bg-neutral-700 rounded-xl px-3 py-2" %>
-    </div>
+  <div class="grid gap-4 sm:grid-cols-2">
+    <div><%= f.label :name, "Название альбома *", class: "mb-2 block text-sm text-neutral-400" %><%= f.text_field :name, required: true, class: "w-full rounded-2xl border border-neutral-800 bg-neutral-950/70 px-4 py-3 text-white outline-none focus:border-green-400" %></div>
+    <div><%= f.label :release_date, "Дата выпуска *", class: "mb-2 block text-sm text-neutral-400" %><%= f.date_field :release_date, required: true, class: "w-full rounded-2xl border border-neutral-800 bg-neutral-950/70 px-4 py-3 text-white outline-none focus:border-green-400" %></div>
   </div>
 
-  <div class="flex flex-col gap-1">
-    <%= f.label :cover_image, "Обложка" %>
-    <%= f.file_field :cover_image, accept: "image/png,image/jpeg,image/jpg,image/webp", class: "bg-neutral-700 rounded-xl px-3 py-2 file:bg-neutral-400 file:rounded-xl file:px-3" %>
-  </div>
+  <div><%= f.label :cover_image, "Обложка", class: "mb-2 block text-sm text-neutral-400" %><%= f.file_field :cover_image, accept: "image/png,image/jpeg,image/jpg,image/webp", class: "w-full rounded-2xl border border-neutral-800 bg-neutral-950/70 px-4 py-3 text-white file:mr-4 file:rounded-xl file:border-0 file:bg-neutral-800 file:px-3 file:py-2 file:text-white" %></div>
 
-  <div class="flex gap-3">
-    <%= f.submit @album.persisted? ? "Сохранить" : "Создать альбом", class: "bg-green-500 hover:bg-green-400 text-black px-4 py-2 rounded-2xl cursor-pointer" %>
-    <%= link_to "Отмена", moderation_albums_path, class: "bg-neutral-700 hover:bg-neutral-600 px-4 py-2 rounded-2xl" %>
-  </div>
+  <div class="flex flex-col gap-3 sm:flex-row"><%= f.submit @album.persisted? ? "Сохранить" : "Создать альбом", class: "rounded-2xl bg-green-400 px-5 py-3 font-bold text-black transition hover:bg-green-300 cursor-pointer" %><%= link_to "Отмена", moderation_albums_path, class: "rounded-2xl border border-neutral-700 bg-neutral-950/70 px-5 py-3 text-center font-semibold text-white transition hover:bg-neutral-800" %></div>
 <% end %>

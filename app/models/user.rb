@@ -19,6 +19,8 @@ class User < ApplicationRecord
 
   has_many :created_artists, class_name: "Artist", foreign_key: :created_by_id, dependent: :nullify
 
+  has_one_attached :avatar
+
   has_many :playlists, dependent: :destroy
 
   has_many :track_likes, dependent: :destroy

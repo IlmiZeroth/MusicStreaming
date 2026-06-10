@@ -8,6 +8,8 @@ module Admin
       @albums_count = Album.count
       @tracks_count = Track.count
       @recent_logs = AuditLog.includes(:actor).recent.limit(10)
+      @mail_messages_count = AdminMailMessage.count
+      @unread_mail_messages_count = AdminMailMessage.unread.count
     end
   end
 end

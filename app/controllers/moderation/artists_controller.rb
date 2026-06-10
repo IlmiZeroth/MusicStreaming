@@ -3,7 +3,15 @@ module Moderation
     before_action :set_artist, only: [:edit, :update, :destroy]
 
     def index
-      @artists = Artist.with_attached_avatar.order(:name)
+      @q = params[:q].to_s.strip
+      artists = Artist.with_attached_avatar.order(:name)
+
+      if @q.present?
+        like = "%#{ActiveRecord::Base.sanitize_sql_like(@q)}%"
+        artists = artists.where("artists.name ILIKE :q OR artists.description ILIKE :q", q: like)
+      end
+
+      @artists, @pagination = paginate(artists)
     end
 
     def search

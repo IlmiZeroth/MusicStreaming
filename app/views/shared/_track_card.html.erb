@@ -16,35 +16,45 @@
      data-track-card-unlike-url-value="<%= unlike_track_path(track) %>"
      data-track-card-play-icon-value="<%= asset_path('play.svg') %>"
      data-track-card-pause-icon-value="<%= asset_path('pause.svg') %>"
-     class="track-card relative text-white bg-neutral-800 h-58 w-46 rounded-2xl flex flex-col justify-center items-center flex-shrink-0 overflow-hidden transition-all duration-200">
-  <div class="cover-image group relative bg-neutral-700 h-36 w-40 rounded-2xl flex-shrink-0 hover:cursor-pointer transition-all duration-200" data-track-card-target="artwork">
+     class="group w-40 shrink-0 rounded-[1.5rem] border border-neutral-800 bg-neutral-900/75 p-3 text-white shadow-lg shadow-black/10 transition duration-200 hover:border-neutral-700 hover:bg-neutral-900 sm:w-48 sm:p-4">
+  <div class="relative aspect-square overflow-hidden rounded-[1.25rem] bg-neutral-800 ring-1 ring-neutral-800" data-track-card-target="artwork">
     <% if track.album.cover_image&.attached? %>
-      <%= image_tag track.album.cover_image, class: "w-full h-full object-cover rounded-2xl", alt: track.name %>
+      <%= image_tag track.album.cover_image, class: "h-full w-full object-cover transition duration-300 group-hover:scale-105", alt: track.name %>
     <% else %>
-      <%= image_tag 'default-music.svg', class: "w-[70%] h-[70%] ml-[14%] mt-[14%]", alt: track.name %>
+      <div class="flex h-full w-full items-center justify-center p-8">
+        <%= image_tag 'default-music.svg', class: "h-full w-full", alt: track.name %>
+      </div>
     <% end %>
 
-    <div class="absolute inset-0 flex items-end justify-between rounded-2xl bg-black/20 backdrop-blur-sm opacity-0 transition-opacity duration-300 group-hover:opacity-100 p-3">
+    <div class="absolute right-2 top-2 z-10 opacity-0 pointer-events-none transition duration-200 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100">
+      <%= render 'shared/track_playlist_button',
+                 track: track,
+                 button_class: 'flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/55 text-sm font-black text-neutral-200 shadow-lg shadow-black/30 backdrop-blur transition hover:bg-green-400 hover:text-black focus:bg-green-400 focus:text-black',
+                 label: '+',
+                 title: 'Сохранить в плейлист' %>
+    </div>
+
+    <div class="absolute inset-0 flex items-end gap-2 bg-gradient-to-t from-black/70 via-black/10 to-transparent p-3 opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100">
       <button type="button"
               data-action="click->track-card#playTrack"
-              class="pointer-events-auto hover:cursor-pointer rounded-full bg-neutral-900/90 p-1.5 hover:bg-neutral-700 transition-colors"
+              class="mr-auto flex h-10 w-10 items-center justify-center rounded-full bg-green-400 text-black shadow-lg shadow-black/30 transition hover:bg-green-300 disabled:opacity-40"
               title="Воспроизвести">
-        <%= image_tag "play.svg", class: "w-8 h-8", data: { track_card_target: "playIcon" } %>
+        <%= image_tag "play.svg", class: "h-7 w-7", data: { track_card_target: "playIcon" } %>
       </button>
 
       <% if local_assigns.fetch(:show_like, true) %>
         <%= render 'shared/track_like_button',
                    track: track,
-                   button_class: 'pointer-events-auto hover:cursor-pointer rounded-full bg-neutral-900/90 p-1.5 hover:bg-neutral-700 transition-colors',
-                   icon_class: 'w-8 h-8' %>
+                   button_class: 'flex h-10 w-10 items-center justify-center rounded-full bg-neutral-950/85 shadow-lg shadow-black/30 transition hover:bg-neutral-800',
+                   icon_class: 'h-6 w-6' %>
       <% end %>
     </div>
   </div>
 
-  <div class="track-name mt-2 truncate w-40" title="<%= track.name %>">
-    <%= track.name %>
-  </div>
-  <div class="track-artist text-neutral-400 truncate w-40 hover:text-gray-400" title="<%= track.artist.name %>">
-    <%= link_to track.artist.name, profile_path(track.artist.id) %>
+  <div class="mt-3 min-w-0">
+    <div class="truncate font-semibold text-white" title="<%= track.name %>"><%= track.name %></div>
+    <div class="mt-1 truncate text-sm text-neutral-400" title="<%= track.artist.name %>">
+      <%= link_to track.artist.name, profile_path(track.artist.id), class: "hover:text-white" %>
+    </div>
   </div>
 </div>

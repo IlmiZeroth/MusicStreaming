@@ -1,10 +1,88 @@
 /*
- * This is a manifest file that'll be compiled into application.css.
- *
- * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
- * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
- * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
- * depending on specificity.
- *
- * Consider organizing styles into separate files for maintainability.
+ * Application-level styles layered on top of Tailwind.
  */
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 15% 10%, rgba(74, 222, 128, 0.08), transparent 28rem),
+    radial-gradient(circle at 85% 0%, rgba(79, 70, 229, 0.13), transparent 30rem),
+    #0a0a0a;
+}
+
+.landing-gradient {
+  background:
+    radial-gradient(circle at 18% 18%, rgba(74, 222, 128, 0.16), transparent 24rem),
+    radial-gradient(circle at 86% 14%, rgba(99, 102, 241, 0.18), transparent 28rem),
+    radial-gradient(circle at 50% 100%, rgba(236, 72, 153, 0.10), transparent 24rem),
+    #0a0a0a;
+}
+
+.landing-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(18px);
+  opacity: 0.48;
+  animation: landing-float 9s ease-in-out infinite;
+}
+
+.landing-orb:nth-child(2) {
+  animation-delay: -3s;
+}
+
+.landing-orb:nth-child(3) {
+  animation-delay: -6s;
+}
+
+@keyframes landing-float {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(1.5rem, -1rem, 0) scale(1.05); }
+}
+
+.wave-card-bars span {
+  display: block;
+  width: 0.55rem;
+  border-radius: 9999px;
+  background: linear-gradient(180deg, #4ade80, #4f4a85);
+  animation: wave-pulse 1.2s ease-in-out infinite;
+}
+
+.wave-card-bars span:nth-child(2n) { animation-delay: -0.25s; }
+.wave-card-bars span:nth-child(3n) { animation-delay: -0.45s; }
+
+@keyframes wave-pulse {
+  0%, 100% { transform: scaleY(0.42); opacity: 0.72; }
+  50% { transform: scaleY(1); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.landing-gradient {
+  max-width: 100vw;
+}
+
+.wave-card-bars span {
+  flex: 0 1 0.55rem;
+  min-width: 0.24rem;
+}
+
+@media (max-width: 420px) {
+  .wave-card-bars span {
+    width: 0.38rem;
+    flex-basis: 0.38rem;
+  }
+}

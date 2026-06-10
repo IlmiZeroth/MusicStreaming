@@ -12,6 +12,11 @@ export default class extends Controller {
         "saveQueuePanel",
         "saveQueueInput",
         "saveQueueStatus",
+        "saveTrackButton",
+        "saveTrackPanel",
+        "saveTrackList",
+        "saveTrackInput",
+        "saveTrackStatus",
         "currentTime",
         "duration",
         "volumeButton",
@@ -29,7 +34,9 @@ export default class extends Controller {
         unlikedIcon: String,
         likedTitle: String,
         unlikedTitle: String,
-        playlistCreateUrl: String
+        playlistCreateUrl: String,
+        playlistSaveUrl: String,
+        playlists: Array
     };
 
     connect() {
@@ -38,9 +45,12 @@ export default class extends Controller {
 
         if (this.audioElement) {
             this.attachDocumentListeners();
+            this.setupMediaSession();
             this.updateLikeButton();
+            this.updateSaveTrackButton();
             this.updateQueueControls();
             this.updatePlayButton();
+            this.updateMediaSession();
             this.broadcastPlaybackState();
             this.drawWaveform();
             return;
@@ -76,12 +86,14 @@ export default class extends Controller {
         this.audioElement.preload = 'metadata';
         this.setupNativeAudioListeners();
         this.setupWaveformRenderer();
+        this.setupMediaSession();
 
         const savedVolume = this.getSavedVolume();
         this.setVolume(null, savedVolume);
 
         this.attachDocumentListeners();
         this.updateLikeButton();
+        this.updateSaveTrackButton();
         this.updateQueueControls();
         this.broadcastPlaybackState();
     }
@@ -118,6 +130,7 @@ export default class extends Controller {
         this.audioElement.addEventListener('play', () => {
             this.isPlaying = true;
             this.updatePlayButton();
+            this.updateMediaSession();
             this.broadcastPlaybackState();
         });
 
@@ -125,12 +138,90 @@ export default class extends Controller {
             if (!this.audioElement.ended) {
                 this.isPlaying = false;
                 this.updatePlayButton();
+                this.updateMediaSession();
                 this.broadcastPlaybackState();
             }
         });
 
         this.audioElement.addEventListener('ended', () => this.handleTrackFinished());
         this.nativeAudioListenersAttached = true;
+    }
+
+    setupMediaSession() {
+        if (!('mediaSession' in navigator) || this.mediaSessionConfigured) return;
+
+        const safeAction = (action, handler) => {
+            try {
+                navigator.mediaSession.setActionHandler(action, handler);
+            } catch (_error) {
+                // Some browsers expose Media Session only partially.
+            }
+        };
+
+        safeAction('play', () => this.playMedia());
+        safeAction('pause', () => {
+            if (!this.audioElement) return;
+            this.audioElement.pause();
+            this.isPlaying = false;
+            this.updatePlayButton();
+            this.updateMediaSession();
+            this.broadcastPlaybackState();
+        });
+        safeAction('previoustrack', () => this.previousTrack());
+        safeAction('nexttrack', () => this.nextTrack());
+        safeAction('seekbackward', (details) => this.seekRelative(-(details.seekOffset || 10)));
+        safeAction('seekforward', (details) => this.seekRelative(details.seekOffset || 10));
+        safeAction('seekto', (details) => {
+            if (!this.audioElement || !Number.isFinite(details.seekTime)) return;
+            this.audioElement.currentTime = details.seekTime;
+            this.updateCurrentTimeFromMedia();
+        });
+
+        this.mediaSessionConfigured = true;
+    }
+
+    seekRelative(offset) {
+        if (!this.audioElement) return;
+
+        const duration = this.bestKnownDuration();
+        const current = Number(this.audioElement.currentTime) || 0;
+        const next = duration ? Math.min(Math.max(current + offset, 0), duration) : Math.max(current + offset, 0);
+        this.audioElement.currentTime = next;
+        this.updateCurrentTimeFromMedia();
+    }
+
+    updateMediaSession() {
+        if (!('mediaSession' in navigator)) return;
+
+        try {
+            navigator.mediaSession.playbackState = this.isPlaying ? 'playing' : 'paused';
+
+            if (!this.currentTrack) return;
+
+            const metadataKey = `${this.currentTrack.id || ''}:${this.currentTrack.title || ''}:${this.currentTrack.artist || ''}:${this.currentTrack.image || ''}:${this.currentQueueName || ''}`;
+            if (this.lastMediaMetadataKey !== metadataKey && 'MediaMetadata' in window) {
+                const artwork = [];
+                if (this.currentTrack.image) {
+                    artwork.push({ src: this.currentTrack.image, sizes: '512x512', type: 'image/png' });
+                }
+
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: this.currentTrack.title || 'Без названия',
+                    artist: this.currentTrack.artist || '',
+                    album: this.currentQueueName || '',
+                    artwork
+                });
+                this.lastMediaMetadataKey = metadataKey;
+            }
+
+            const duration = this.bestKnownDuration();
+            const currentTime = Number(this.audioElement?.currentTime) || 0;
+            if (duration && typeof navigator.mediaSession.setPositionState === 'function') {
+                navigator.mediaSession.setPositionState({ duration, playbackRate: 1, position: Math.min(currentTime, duration) });
+            }
+        } catch (_error) {
+            // Ignore Media Session metadata errors; playback must keep working.
+        }
     }
 
     updateDurationFromMedia() {
@@ -144,6 +235,7 @@ export default class extends Controller {
         this.waveformDuration = duration;
         this.durationTarget.textContent = this.formatTime(duration);
         this.drawWaveform();
+        this.updateMediaSession();
         this.broadcastPlaybackState();
     }
 
@@ -153,6 +245,7 @@ export default class extends Controller {
 
         this.currentTimeTarget.textContent = this.formatTime(currentTime);
         this.drawWaveform();
+        this.updateMediaSession();
     }
 
     bestKnownDuration() {
@@ -404,10 +497,12 @@ export default class extends Controller {
             : null;
 
         this.renderCurrentTrackInfo();
+        this.updateMediaSession();
         this.currentTimeTarget.textContent = '0:00';
         this.durationTarget.textContent = initialDuration ? this.formatTime(initialDuration) : '0:00';
         this.renderWaveform(cachedPeaks, initialDuration);
         this.updateLikeButton();
+        this.updateSaveTrackButton();
         this.updateQueueControls();
         this.playerTarget.classList.remove("hidden");
         this.isAppeared = true;
@@ -443,6 +538,7 @@ export default class extends Controller {
 
         this.updateDurationFromMedia();
         this.updatePlayButton();
+        this.updateMediaSession();
         this.broadcastPlaybackState();
     }
 
@@ -466,6 +562,7 @@ export default class extends Controller {
         try {
             await this.audioElement.play();
             this.isPlaying = true;
+            this.updateMediaSession();
         } catch (error) {
             console.warn('Не удалось начать воспроизведение', error);
             this.isPlaying = false;
@@ -628,6 +725,144 @@ export default class extends Controller {
         }
     }
 
+
+    toggleSaveTrackMenu(event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        if (!this.currentTrack || !this.hasSaveTrackPanelTarget) return;
+
+        if (this.saveTrackPanelTarget.classList.contains('hidden')) {
+            this.openSaveTrackMenu();
+        } else {
+            this.closeSaveTrackMenu();
+        }
+    }
+
+    openSaveTrackMenu() {
+        if (!this.hasSaveTrackPanelTarget) return;
+
+        this.renderSaveTrackList();
+        this.setSaveTrackStatus('');
+        this.saveTrackPanelTarget.classList.remove('hidden');
+
+        if (this.hasSaveTrackInputTarget) {
+            this.saveTrackInputTarget.value = '';
+        }
+    }
+
+    closeSaveTrackMenu(event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        if (!this.hasSaveTrackPanelTarget) return;
+        this.saveTrackPanelTarget.classList.add('hidden');
+        this.setSaveTrackStatus('');
+    }
+
+    renderSaveTrackList() {
+        if (!this.hasSaveTrackListTarget) return;
+
+        const playlists = this.playlistsValue || [];
+        if (playlists.length === 0) {
+            this.saveTrackListTarget.innerHTML = '<div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 px-3 py-3 text-sm text-neutral-400">У вас пока нет плейлистов. Создайте новый ниже.</div>';
+            return;
+        }
+
+        this.saveTrackListTarget.innerHTML = playlists.map((playlist) => `
+            <button type="button"
+                    data-playlist-id="${this.escapeAttribute(playlist.id)}"
+                    data-action="audio-player#saveCurrentTrackToExistingPlaylist"
+                    class="flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-3 text-left transition hover:bg-neutral-900">
+                <span class="min-w-0 truncate text-sm font-semibold text-white">${this.escapeHtml(playlist.name)}</span>
+                <span class="shrink-0 text-xs text-green-300">Добавить</span>
+            </button>
+        `).join('');
+    }
+
+    async saveCurrentTrackToExistingPlaylist(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const playlistId = event.currentTarget.dataset.playlistId;
+        if (!playlistId) return;
+
+        await this.saveCurrentTrackToPlaylist({ playlist_id: playlistId });
+    }
+
+    async saveCurrentTrackToNewPlaylist(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const name = this.hasSaveTrackInputTarget ? this.saveTrackInputTarget.value.trim() : '';
+        if (!name) {
+            this.setSaveTrackStatus('Введите название плейлиста');
+            if (this.hasSaveTrackInputTarget) this.saveTrackInputTarget.focus();
+            return;
+        }
+
+        await this.saveCurrentTrackToPlaylist({ playlist_name: name });
+    }
+
+    async saveCurrentTrackToPlaylist(payload) {
+        if (!this.currentTrack) return;
+
+        this.setSaveTrackLoading(true);
+        this.setSaveTrackStatus('Сохраняем...');
+
+        try {
+            const response = await fetch(this.playlistSaveEndpoint(), {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-Token': this.csrfToken(),
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({ track_id: this.currentTrack.id, ...payload })
+            });
+
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(data.error || 'Не удалось сохранить трек');
+
+            this.addPlaylistOption(data.playlist);
+            this.renderSaveTrackList();
+            if (this.hasSaveTrackInputTarget) this.saveTrackInputTarget.value = '';
+            this.setSaveTrackStatus(data.message || 'Трек сохранён');
+        } catch (error) {
+            this.setSaveTrackStatus(error.message || 'Не удалось сохранить трек');
+        } finally {
+            this.setSaveTrackLoading(false);
+        }
+    }
+
+    addPlaylistOption(playlist) {
+        if (!playlist?.id) return;
+
+        const playlists = this.playlistsValue || [];
+        if (!playlists.some((item) => String(item.id) === String(playlist.id))) {
+            this.playlistsValue = [...playlists, { id: playlist.id.toString(), name: playlist.name }];
+        }
+    }
+
+    setSaveTrackStatus(message) {
+        if (!this.hasSaveTrackStatusTarget) return;
+        this.saveTrackStatusTarget.textContent = message || '';
+        this.saveTrackStatusTarget.classList.toggle('text-red-300', String(message || '').startsWith('Не'));
+        this.saveTrackStatusTarget.classList.toggle('text-neutral-400', !String(message || '').startsWith('Не'));
+    }
+
+    setSaveTrackLoading(loading) {
+        if (this.hasSaveTrackButtonTarget) {
+            this.saveTrackButtonTarget.disabled = loading;
+            this.saveTrackButtonTarget.classList.toggle('opacity-60', loading);
+            this.saveTrackButtonTarget.classList.toggle('pointer-events-none', loading);
+        }
+        if (this.hasSaveTrackInputTarget) this.saveTrackInputTarget.disabled = loading;
+    }
+
     async toggleLike(event) {
         event.preventDefault();
         event.stopPropagation();
@@ -728,6 +963,7 @@ export default class extends Controller {
         this.playButtonTarget.innerHTML = this.isPlaying ? Icons.pause : Icons.play;
         this.playButtonTarget.title = title;
         this.playButtonTarget.setAttribute('aria-label', title);
+        this.updateMediaSession();
     }
 
     updateLikeButton() {
@@ -747,6 +983,22 @@ export default class extends Controller {
         this.likeIconTarget.src = liked ? this.likedIconValue : this.unlikedIconValue;
     }
 
+
+
+    updateSaveTrackButton() {
+        if (!this.hasSaveTrackButtonTarget) return;
+
+        if (!this.currentTrack) {
+            this.saveTrackButtonTarget.classList.add('hidden');
+            this.saveTrackButtonTarget.classList.remove('flex');
+            this.closeSaveTrackMenu();
+            return;
+        }
+
+        this.saveTrackButtonTarget.classList.remove('hidden');
+        this.saveTrackButtonTarget.classList.add('flex');
+    }
+
     updateQueueControls() {
         const hasQueue = this.currentQueue.length > 0;
 
@@ -759,6 +1011,7 @@ export default class extends Controller {
         }
 
         if (!hasQueue) this.closeSaveQueueMenu();
+        if (!this.currentTrack) this.closeSaveTrackMenu();
 
         if (this.hasQueueTitleTarget) {
             if (!hasQueue) {
@@ -1033,6 +1286,10 @@ export default class extends Controller {
         return this.hasPlaylistCreateUrlValue ? this.playlistCreateUrlValue : '/playlists';
     }
 
+    playlistSaveEndpoint() {
+        return this.hasPlaylistSaveUrlValue ? this.playlistSaveUrlValue : '/playlists/save_track';
+    }
+
     formatTime(seconds) {
         if (isNaN(seconds)) return "0:00";
 
@@ -1054,6 +1311,16 @@ export default class extends Controller {
             }
         }
         return 0.7;
+    }
+
+    escapeHtml(value) {
+        const div = document.createElement('div');
+        div.textContent = value ?? '';
+        return div.innerHTML;
+    }
+
+    escapeAttribute(value) {
+        return this.escapeHtml(value).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
     csrfToken() {

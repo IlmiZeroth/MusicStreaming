@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_08_133000) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_10_103000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -42,6 +42,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_08_133000) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+
+
+  create_table "admin_mail_messages", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "body", null: false
+    t.datetime "read_at"
+    t.string "message_type", default: "password_reset", null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.bigint "recipient_id"
+    t.string "recipient_email", null: false
+    t.string "subject", null: false
+    t.datetime "updated_at", null: false
+    t.index ["message_type", "created_at"], name: "index_admin_mail_messages_on_message_type_and_created_at"
+    t.index ["read_at"], name: "index_admin_mail_messages_on_read_at"
+    t.index ["recipient_id"], name: "index_admin_mail_messages_on_recipient_id"
+  end
 
   create_table "artists", force: :cascade do |t|
     t.datetime "created_at", null: false
@@ -172,6 +188,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_08_133000) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "admin_mail_messages", "users", column: "recipient_id"
   add_foreign_key "artists", "users", column: "created_by_id"
   add_foreign_key "audit_logs", "users", column: "actor_id"
   add_foreign_key "album_likes", "albums"

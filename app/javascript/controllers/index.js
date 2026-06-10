@@ -42,3 +42,15 @@ application.register("preview", PreviewController)
 
 import EntitySearchController from "./entity_search_controller"
 application.register("entity-search", EntitySearchController)
+
+import LiveSearchController from "./live_search_controller"
+application.register("live-search", LiveSearchController)
+
+import PlaylistEditorController from "./playlist_editor_controller"
+application.register("playlist-editor", PlaylistEditorController)
+
+import BulkTracksController from "./bulk_tracks_controller"
+application.register("bulk-tracks", BulkTracksController)
+
+import TrackPlaylistController from "./track_playlist_controller"
+application.register("track-playlist", TrackPlaylistController)

@@ -4,7 +4,18 @@ module Moderation
     before_action :set_selected_artist, only: [:new, :edit, :create, :update]
 
     def index
-      @albums = Album.includes(:artist, :tracks).order(created_at: :desc)
+      @q = params[:q].to_s.strip
+      albums = Album.joins(:artist).includes(:artist, :tracks).order(created_at: :desc)
+
+      if @q.present?
+        like = "%#{ActiveRecord::Base.sanitize_sql_like(@q)}%"
+        albums = albums.where(
+          "albums.name ILIKE :q OR artists.name ILIKE :q OR CAST(albums.release_date AS TEXT) ILIKE :q",
+          q: like
+        )
+      end
+
+      @albums, @pagination = paginate(albums)
     end
 
     def search
@@ -19,7 +30,8 @@ module Moderation
         {
           id: album.id,
           label: album.name,
-          subtitle: "#{album.artist.name} · #{album.release_date || 'без даты'}"
+          subtitle: "#{album.artist.name} · #{album.release_date || 'без даты'} · следующий №#{next_track_number_for(album)}",
+          next_position: next_track_number_for(album)
         }
       }
     end
@@ -69,6 +81,10 @@ module Moderation
     end
 
     private
+
+    def next_track_number_for(album)
+      album.tracks.maximum(:number_in_album).to_i + 1
+    end
 
     def set_album
       @album = Album.find(params[:id])

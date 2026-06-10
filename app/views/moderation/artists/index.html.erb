@@ -1,38 +1,18 @@
 <%= render "shared/header" %>
 
-<div class="text-white px-6 py-6 mb-28">
-  <div class="flex items-center justify-between gap-4 mb-6">
-    <div>
-      <h1 class="text-3xl font-bold">Артисты</h1>
-      <p class="text-neutral-400 mt-1">Артисты — отдельная сущность. Они не входят в аккаунты пользователей.</p>
-    </div>
-    <div class="flex gap-2">
-      <%= link_to "+ Артист", new_moderation_artist_path, class: "bg-green-500 hover:bg-green-400 text-black px-4 py-2 rounded-2xl" %>
-      <%= link_to "Панель модерации", moderation_root_path, class: "bg-neutral-800 hover:bg-neutral-700 px-4 py-2 rounded-2xl" %>
-    </div>
-  </div>
+<main class="<%= page_shell_class %>">
+  <section class="rounded-[2rem] border border-neutral-800 bg-neutral-900/70 p-5 shadow-xl shadow-black/20 sm:p-7">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between"><div><p class="text-sm font-semibold uppercase tracking-[0.2em] text-green-300">Каталог</p><h1 class="mt-2 text-3xl font-black text-white sm:text-4xl">Артисты</h1></div><div class="flex flex-wrap gap-2"><%= link_to "+ Артист", new_moderation_artist_path, class: primary_button_class %><%= link_to "Панель", moderation_root_path, class: secondary_button_class %></div></div>
+  </section>
 
-  <div class="bg-neutral-800 rounded-2xl p-5 overflow-x-auto">
-    <table class="w-full text-left">
-      <thead class="text-neutral-400 border-b border-neutral-700">
-        <tr><th class="py-2">Артист</th><th>Описание</th><th>Альбомы</th><th>Треки</th><th></th></tr>
-      </thead>
-      <tbody>
-        <% @artists.each do |artist| %>
-          <tr class="border-b border-neutral-700/60">
-            <td class="py-3"><%= link_to artist.name, profile_path(artist), class: "hover:underline" %></td>
-            <td class="text-neutral-300 max-w-md truncate"><%= artist.description.presence || "—" %></td>
-            <td><%= artist.albums_count %></td>
-            <td><%= artist.tracks_count %></td>
-            <td class="flex gap-2 justify-end">
-              <%= link_to "Альбом", new_moderation_album_path(artist_id: artist.id), class: "text-green-400 hover:text-green-300" %>
-              <%= link_to "Редактировать", edit_moderation_artist_path(artist), class: "text-neutral-300 hover:text-white" %>
-              <%= button_to "Удалить", moderation_artist_path(artist), method: :delete, data: { turbo_confirm: "Удалить артиста #{artist.name} вместе с альбомами и треками?" }, class: "text-red-300 hover:text-red-200 cursor-pointer" %>
-            </td>
-          </tr>
-        <% end %>
-        <% if @artists.empty? %><tr><td colspan="5" class="py-6 text-neutral-400">Артистов пока нет.</td></tr><% end %>
-      </tbody>
-    </table>
-  </div>
-</div>
+  <section class="mt-6 rounded-[2rem] border border-neutral-800 bg-neutral-900/70 p-4 sm:p-6">
+<%= render "shared/pagination_filter", label: "Поиск артистов", placeholder: "Имя артиста или описание" %>
+    <div class="overflow-x-auto"><table class="w-full min-w-[820px] text-left text-sm"><thead class="border-b border-neutral-800 text-neutral-500"><tr><th class="py-3 font-medium">Артист</th><th class="font-medium">Описание</th><th class="font-medium">Альбомы</th><th class="font-medium">Треки</th><th></th></tr></thead><tbody class="divide-y divide-neutral-800/80">
+      <% @artists.each do |artist| %>
+        <tr><td class="py-3 font-semibold"><%= link_to artist.name, profile_path(artist), class: "hover:text-green-300" %></td><td class="max-w-md truncate text-neutral-300"><%= artist.description.presence || "—" %></td><td><%= artist.albums_count %></td><td><%= artist.tracks_count %></td><td class="flex justify-end gap-3 py-3"><%= link_to "Альбом", new_moderation_album_path(artist_id: artist.id), class: "text-green-300 hover:text-green-200" %><%= link_to "Редактировать", edit_moderation_artist_path(artist), class: "text-neutral-300 hover:text-white" %><%= button_to "Удалить", moderation_artist_path(artist), method: :delete, data: { turbo_confirm: "Удалить артиста #{artist.name} вместе с альбомами и треками?" }, class: "text-red-300 hover:text-red-200 cursor-pointer" %></td></tr>
+      <% end %>
+      <% if @artists.empty? %><tr><td colspan="5" class="py-8 text-neutral-400">Артистов пока нет.</td></tr><% end %>
+    </tbody></table></div>
+    <%= render "shared/pagination", pagination: @pagination %>
+  </section>
+</main>

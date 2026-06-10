@@ -7,112 +7,143 @@
      data-audio-player-liked-title-value="Убрать из понравившихся треков"
      data-audio-player-unliked-title-value="Добавить в понравившиеся треки"
      data-audio-player-playlist-create-url-value="<%= playlists_path %>"
-     class="audio-player hidden h-30 text-white border-t border-solid border-neutral-700 bg-neutral-800 fixed bottom-0 w-full">
-  <!-- Волновая форма -->
-  <div class="relative w-full">
-    <div id="waveform" data-audio-player-target="waveform" class="waveform-container w-full pointer-events-auto hover:cursor-text">
-    </div>
-    <div class="absolute grid grid-rows-1 grid-cols-3 inset-0 z-50 w-full ml-5 pr-10 mt-2 pointer-events-none">
-      <div class="track grid min-w-0">
-        <div class="track-info flex justify-start min-w-0" data-audio-player-target="trackInfo">
-          <img class="object-cover rounded-2xl w-20 h-20 shrink-0" data-audio-player-target="trackImage">
+     data-audio-player-playlist-save-url-value="<%= save_track_playlists_path %>"
+     data-audio-player-playlists-value="<%= playlist_options_payload.to_json %>"
+     class="audio-player hidden fixed inset-x-0 bottom-0 z-50 border-t border-neutral-800 bg-neutral-950/95 text-white shadow-2xl shadow-black/60 backdrop-blur-xl">
+  <div class="relative mx-auto w-full max-w-7xl px-3 py-3 sm:px-4 lg:px-6">
+    <div id="waveform" data-audio-player-target="waveform" class="waveform-container mb-3 h-16 w-full overflow-hidden rounded-2xl bg-neutral-900/80 ring-1 ring-neutral-800 hover:cursor-text sm:h-20"></div>
+
+    <div class="grid grid-cols-[1fr_auto] gap-3 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
+      <div class="min-w-0">
+        <div class="flex min-w-0 items-center gap-3" data-audio-player-target="trackInfo">
+          <img class="h-12 w-12 shrink-0 rounded-2xl object-cover ring-1 ring-neutral-800 sm:h-14 sm:w-14" data-audio-player-target="trackImage" alt="">
           <div class="min-w-0">
-            <h3 class="ml-2 pointer-events-auto truncate max-w-70" data-audio-player-target="trackTitle" title="Загрузка...">Загрузка...</h3>
-            <p class="ml-2 text-neutral-400 pointer-events-auto truncate max-w-70" data-audio-player-target="trackArtist"></p>
-            <a class="ml-2 text-neutral-500 text-xs pointer-events-auto truncate max-w-70" data-audio-player-target="queueTitle"></a>
+            <h3 class="truncate text-sm font-bold sm:text-base" data-audio-player-target="trackTitle" title="Загрузка...">Загрузка...</h3>
+            <p class="truncate text-sm text-neutral-400" data-audio-player-target="trackArtist"></p>
+            <a class="hidden truncate text-xs text-neutral-500 hover:text-neutral-300 sm:block" data-audio-player-target="queueTitle"></a>
           </div>
-        </div>
-        <div class="time-display">
-          <span data-audio-player-target="currentTime">0:00</span>
-          <span>/</span>
-          <span data-audio-player-target="duration">0:00</span>
         </div>
       </div>
 
-      <div class="player-controls flex justify-center items-start gap-4">
+      <div class="flex items-center justify-center gap-2 sm:gap-3">
         <button type="button"
                 data-action="audio-player#previousTrack"
                 data-audio-player-target="previousButton"
-                class="align-middle control-btn h-min mt-8 pointer-events-auto hover:cursor-pointer disabled:opacity-40 disabled:cursor-default"
+                class="flex h-10 w-10 items-center justify-center rounded-2xl bg-neutral-900 transition hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-default sm:h-11 sm:w-11"
                 title="Предыдущий трек">
-          <%= image_tag "previous.svg", class: "w-10 h-10" %>
+          <%= image_tag "previous.svg", class: "h-7 w-7" %>
         </button>
         <button type="button"
                 data-action="audio-player#playPause"
                 data-audio-player-target="playButton"
-                class="align-middle control-btn h-min mt-8 pointer-events-auto hover:cursor-pointer"
+                class="flex h-12 w-12 items-center justify-center rounded-2xl bg-green-400 text-black shadow-lg shadow-green-400/20 transition hover:bg-green-300 sm:h-14 sm:w-14"
                 title="Воспроизвести"
                 aria-label="Воспроизвести">
-          <%= image_tag "play.svg", class: "w-10 h-10" %>
+          <%= image_tag "play.svg", class: "h-8 w-8" %>
         </button>
         <button type="button"
                 data-action="audio-player#nextTrack"
                 data-audio-player-target="nextButton"
-                class="align-middle control-btn h-min mt-8 pointer-events-auto hover:cursor-pointer disabled:opacity-40 disabled:cursor-default"
+                class="flex h-10 w-10 items-center justify-center rounded-2xl bg-neutral-900 transition hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-default sm:h-11 sm:w-11"
                 title="Следующий трек">
-          <%= image_tag "next.svg", class: "w-10 h-10" %>
+          <%= image_tag "next.svg", class: "h-7 w-7" %>
         </button>
       </div>
 
-      <div class="audio-controls flex justify-end items-start gap-3">
-        <div class="relative mt-8 pointer-events-auto">
-          <form data-audio-player-target="saveQueuePanel"
-                data-action="submit->audio-player#saveQueue click->audio-player#noop"
-                class="hidden absolute bottom-full right-0 mb-3 w-72 rounded-2xl border border-neutral-700 bg-neutral-900/95 p-3 shadow-xl shadow-black/30">
-            <label class="block text-xs text-neutral-400 mb-2" for="save-queue-name">Название плейлиста</label>
-            <input id="save-queue-name"
-                   type="text"
-                   data-audio-player-target="saveQueueInput"
-                   class="w-full rounded-xl bg-neutral-800 px-3 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-green-400"
-                   placeholder="Мой плейлист">
-            <p class="min-h-5 mt-2 text-xs text-neutral-400" data-audio-player-target="saveQueueStatus"></p>
-            <div class="mt-2 flex justify-end gap-2">
-              <button type="button"
-                      data-action="audio-player#closeSaveQueueMenu"
-                      class="rounded-xl px-3 py-1.5 text-sm text-neutral-300 hover:bg-neutral-800 transition-colors">
-                Отмена
-              </button>
-              <button type="submit"
-                      class="rounded-xl bg-green-400 px-3 py-1.5 text-sm text-black hover:text-neutral-700 transition-colors">
-                Сохранить
-              </button>
-            </div>
-          </form>
-          <button type="button"
-                  data-action="audio-player#toggleSaveQueueMenu"
-                  data-audio-player-target="saveQueueButton"
-                  class="hidden rounded-2xl border border-neutral-700 bg-neutral-900/60 px-3 py-1.5 text-xs text-neutral-300 hover:bg-neutral-700 hover:text-white transition-colors disabled:opacity-40 disabled:cursor-default"
-                  title="Сохранить текущую очередь как плейлист">
-            Сохранить плейлист
-          </button>
+      <div class="col-span-2 flex items-center justify-between gap-3 lg:col-span-1 lg:justify-end">
+        <div class="text-xs text-neutral-400 sm:text-sm">
+          <span data-audio-player-target="currentTime">0:00</span>
+          <span class="text-neutral-600">/</span>
+          <span data-audio-player-target="duration">0:00</span>
         </div>
 
-        <button type="button"
-                data-action="audio-player#toggleLike"
-                data-audio-player-target="likeButton"
-                class="hidden align-middle control-btn h-min mt-8 pointer-events-auto hover:cursor-pointer"
-                title="Добавить в понравившиеся треки">
-          <%= image_tag "follow.svg", class: "w-8 h-8", data: { audio_player_target: "likeIcon" } %>
-        </button>
-
-        <div class="relative group flex flex-col justify-end items-center">
-          <div class="absolute invisible bottom-full z-50 -rotate-90 mb-8 group-hover:visible transition-all duration-300">
-            <input type="range"
-                   data-action="input->audio-player#setVolume"
-                   data-audio-player-target="volumeSlider"
-                   class="volume-slider pointer-events-auto"
-                   min="0"
-                   max="100"
-                   value="70">
+        <div class="flex items-center gap-2 sm:gap-3">
+          <div class="relative">
+            <form data-audio-player-target="saveQueuePanel"
+                  data-action="submit->audio-player#saveQueue click->audio-player#noop"
+                  class="hidden absolute bottom-full right-0 mb-3 w-[calc(100vw-2rem)] max-w-xs rounded-3xl border border-neutral-800 bg-neutral-950/95 p-4 shadow-2xl shadow-black/50">
+              <label class="block text-xs text-neutral-400 mb-2" for="save-queue-name">Название плейлиста</label>
+              <input id="save-queue-name"
+                     type="text"
+                     data-audio-player-target="saveQueueInput"
+                     class="w-full rounded-2xl border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm text-white outline-none focus:border-green-400"
+                     placeholder="Мой плейлист">
+              <p class="min-h-5 mt-2 text-xs text-neutral-400" data-audio-player-target="saveQueueStatus"></p>
+              <div class="mt-3 flex justify-end gap-2">
+                <button type="button" data-action="audio-player#closeSaveQueueMenu" class="rounded-2xl px-3 py-2 text-sm text-neutral-300 hover:bg-neutral-900">Отмена</button>
+                <button type="submit" class="rounded-2xl bg-green-400 px-3 py-2 text-sm font-semibold text-black hover:bg-green-300">Сохранить плейлист</button>
+              </div>
+            </form>
+            <button type="button"
+                    data-action="audio-player#toggleSaveQueueMenu"
+                    data-audio-player-target="saveQueueButton"
+                    class="hidden rounded-2xl border border-neutral-800 bg-neutral-900 px-3 py-2 text-xs text-neutral-300 transition hover:bg-neutral-800 hover:text-white disabled:opacity-40 disabled:cursor-default sm:inline-flex"
+                    title="Сохранить текущую очередь как плейлист">
+              Сохранить плейлист
+            </button>
           </div>
+
+          <div class="relative">
+            <div data-audio-player-target="saveTrackPanel"
+                 data-action="click->audio-player#noop"
+                 class="hidden absolute bottom-full right-0 mb-3 w-[calc(100vw-2rem)] max-w-sm rounded-3xl border border-neutral-800 bg-neutral-950/95 p-4 shadow-2xl shadow-black/50">
+              <div class="mb-3">
+                <p class="text-sm font-black text-white">Сохранить трек</p>
+                <p class="mt-1 text-xs text-neutral-500">Добавьте текущий трек в существующий плейлист или создайте новый.</p>
+              </div>
+              <div data-audio-player-target="saveTrackList" class="max-h-44 overflow-y-auto pr-1"></div>
+              <form data-action="submit->audio-player#saveCurrentTrackToNewPlaylist" class="mt-3 border-t border-neutral-800 pt-3">
+                <label class="mb-2 block text-xs text-neutral-500" for="save-current-track-playlist-name">Новый плейлист</label>
+                <div class="flex gap-2">
+                  <input id="save-current-track-playlist-name"
+                         type="text"
+                         data-audio-player-target="saveTrackInput"
+                         class="min-w-0 flex-1 rounded-2xl border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm text-white outline-none focus:border-green-400"
+                         placeholder="Название">
+                  <button type="submit" class="rounded-2xl bg-green-400 px-3 py-2 text-sm font-bold text-black hover:bg-green-300">Создать</button>
+                </div>
+              </form>
+              <p class="min-h-5 mt-2 text-xs text-neutral-400" data-audio-player-target="saveTrackStatus"></p>
+            </div>
+            <button type="button"
+                    data-action="audio-player#toggleSaveTrackMenu"
+                    data-audio-player-target="saveTrackButton"
+                    class="hidden h-10 w-10 items-center justify-center rounded-2xl bg-neutral-900 text-lg font-black text-green-300 transition hover:bg-neutral-800 hover:text-green-200"
+                    title="Сохранить текущий трек в плейлист"
+                    aria-label="Сохранить текущий трек в плейлист">
+              +
+            </button>
+          </div>
+
           <button type="button"
-                  data-action="audio-player#toggleMute"
-                  data-audio-player-target="volumeButton"
-                  class="control-btn h-min mt-8 pointer-events-auto shrink-0 hover:cursor-pointer"
-                  title="Выключить звук"
-                  aria-label="Выключить звук">
-            <%= image_tag "sound-2.svg", class: "w-10 h-10" %>
+                  data-action="audio-player#toggleLike"
+                  data-audio-player-target="likeButton"
+                  class="hidden h-10 w-10 flex items-center justify-center rounded-2xl bg-neutral-900 transition hover:bg-neutral-800"
+                  title="Добавить в понравившиеся треки">
+            <%= image_tag "follow.svg", class: "h-6 w-6", data: { audio_player_target: "likeIcon" } %>
           </button>
+
+          <div class="relative group flex items-center">
+            <div class="absolute bottom-full right-0 z-50 hidden pb-2 group-hover:block group-focus-within:block">
+              <div class="rounded-2xl border border-neutral-800 bg-neutral-950 p-3 shadow-2xl">
+                <input type="range"
+                       data-action="input->audio-player#setVolume"
+                       data-audio-player-target="volumeSlider"
+                       class="volume-slider w-32"
+                       min="0"
+                       max="100"
+                       value="70">
+              </div>
+            </div>
+            <button type="button"
+                    data-action="audio-player#toggleMute"
+                    data-audio-player-target="volumeButton"
+                    class="flex h-10 w-10 items-center justify-center rounded-2xl bg-neutral-900 transition hover:bg-neutral-800"
+                    title="Выключить звук"
+                    aria-label="Выключить звук">
+              <%= image_tag "sound-2.svg", class: "h-7 w-7" %>
+            </button>
+          </div>
         </div>
       </div>
     </div>

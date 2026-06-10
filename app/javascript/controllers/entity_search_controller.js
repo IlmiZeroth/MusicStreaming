@@ -53,6 +53,7 @@ export default class extends Controller {
               class="block w-full text-left px-3 py-3 hover:bg-neutral-700 transition-colors"
               data-id="${this.escapeHtml(String(item.id))}"
               data-label="${this.escapeHtml(item.label)}"
+              data-next-position="${this.escapeHtml(String(item.next_position || 1))}"
               data-action="click->entity-search#select">
         <span class="block text-white">${this.escapeHtml(item.label)}</span>
         <span class="block text-sm text-neutral-400">${this.escapeHtml(item.subtitle || "")}</span>
@@ -66,6 +67,14 @@ export default class extends Controller {
     this.inputTarget.value = button.dataset.label
     this.hiddenTarget.value = button.dataset.id
     this.selectedLabel = button.dataset.label
+    this.dispatch("selected", {
+      bubbles: true,
+      detail: {
+        id: button.dataset.id,
+        label: button.dataset.label,
+        nextPosition: Number(button.dataset.nextPosition || 1)
+      }
+    })
     this.hideResults()
   }
 
