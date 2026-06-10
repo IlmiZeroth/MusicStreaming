@@ -1,39 +1,16 @@
-<div class = "create-album text-white flex justify-center" data-studio-target="albumForm">
-  <%= form_with model: Album.new, local: true, html: { multipart: true, class: "mt-5 mb-5 pt-3 pb-3 pr-5 pl-5 rounded-2xl gap-7 flex flex-row items-center justify-center bg-neutral-800" } do |f| %>
-    <div data-controller="preview"
-         data-preview-default-url-value="<%= asset_path('default-music.svg') %>"
-         class="cover-image flex flex-col items-center">
-
-      <div class="album-cover h-28 w-28 rounded-2xl overflow-hidden bg-neutral-700">
-        <img data-preview-target="preview"
-             class="w-full h-full object-cover"
-             src="<%= asset_path('default-music.svg') %>" />
+<section class="rounded-[2rem] border border-neutral-800 bg-neutral-900/70 p-5 sm:p-6" data-studio-target="albumForm">
+  <h2 class="text-xl font-bold text-white">Создать альбом</h2>
+  <%= form_with model: Album.new, local: true, html: { multipart: true, class: "mt-4 grid gap-4 lg:grid-cols-[auto_1fr_1fr_auto] lg:items-end" } do |f| %>
+    <div data-controller="preview" data-preview-default-url-value="<%= asset_path('default-music.svg') %>" class="flex flex-col items-center gap-2">
+      <div class="h-28 w-28 overflow-hidden rounded-2xl bg-neutral-800 ring-1 ring-neutral-700">
+        <img data-preview-target="preview" class="h-full w-full object-cover" src="<%= asset_path('default-music.svg') %>" alt="Обложка" />
       </div>
-
-      <div class="change-cover relative">
-        <%= f.label :cover_image, "Сменить обложку", class: "hover:text-neutral-400 cursor-pointer" %>
-        <%= f.file_field :cover_image,
-                         class: "hidden",
-                         accept: "image/png,image/jpeg,image/jpg,image/webp",
-                         data: {
-                           action: "change->preview#preview",
-                           preview_target: "input"
-                         } %>
-      </div>
+      <%= f.label :cover_image, "Обложка", class: "cursor-pointer text-sm text-neutral-400 hover:text-white" %>
+      <%= f.file_field :cover_image, class: "hidden", accept: "image/png,image/jpeg,image/jpg,image/webp", data: { action: "change->preview#preview", preview_target: "input" } %>
     </div>
 
-    <div class = "flex flex-col">
-      <%= f.label :name, "Название альбома *", class: "" %>
-      <%= f.text_field :name, class: "bg-neutral-700 rounded-2xl pl-1 pr-1 pt-1 pb-1", required: true %>
-    </div>
-
-    <div class = "flex flex-col">
-      <%= f.label :release_date, "Дата выпуска *", class: "-" %>
-      <%= f.date_field :release_date, class: "bg-neutral-700 rounded-2xl pl-1 pr-1 pt-1 pb-1", required: true %>
-    </div>
-
-    <div class = "flex flex-col bg-green-500 mt-6 rounded-2xl hover:cursor-pointer hover:bg-green-400 transition-colors delay-75">
-      <%= f.submit "+ Создать альбом", class: "pl-1 pr-1 pt-1 pb-1" %>
-    </div>
+    <div><%= f.label :name, "Название альбома *", class: "mb-2 block text-sm text-neutral-400" %><%= f.text_field :name, class: "w-full rounded-2xl border border-neutral-800 bg-neutral-950/70 px-4 py-3 text-white outline-none focus:border-green-400", required: true %></div>
+    <div><%= f.label :release_date, "Дата выпуска *", class: "mb-2 block text-sm text-neutral-400" %><%= f.date_field :release_date, class: "w-full rounded-2xl border border-neutral-800 bg-neutral-950/70 px-4 py-3 text-white outline-none focus:border-green-400", required: true %></div>
+    <%= f.submit "+ Создать", class: "rounded-2xl bg-green-400 px-5 py-3 font-bold text-black transition hover:bg-green-300 cursor-pointer" %>
   <% end %>
-</div>
+</section>

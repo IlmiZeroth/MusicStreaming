@@ -1,54 +1,61 @@
 class AlbumsController < PagesController
-  before_action :set_user, only: [:update, :destroy]
-  before_action :authorize_settings_access!, only: [:update, :destroy]
+  before_action :set_album, only: [:show, :update, :destroy]
+  before_action :authorize_album_management!, only: [:create, :update, :destroy]
 
   def show
-    @album = Album.find(params[:id])
-    unless @album.present?
-      redirect_to root_path, alert: "Альбом не найден"
-    end
     @tracks = @album.tracks.order(number_in_album: :asc)
-    @user = @album.user
-    @show_actions = UserPolicy.new(current_user, @user).settings?
+    @artist = @album.artist
+    @show_actions = AlbumPolicy.new(current_user, @album).manage?
   end
+
   def create
-    @album = current_user.albums.build(album_params)
+    @album = Album.new(album_params)
 
     if @album.save
-      redirect_to studio_path, notice: "Album was successfully created."
+      audit!("moderation.album.created", @album, name: @album.name, artist_id: @album.artist_id)
+      redirect_to album_path(@album), notice: "Альбом создан."
     else
-      redirect_to studio_path, alert: "Album was not created."
+      redirect_to moderation_albums_path, alert: @album.errors.full_messages.to_sentence
     end
   end
+
   def destroy
-    @album = Album.find(params[:id])
+    album_id = @album.id
+    album_name = @album.name
 
     if @album.destroy
-      redirect_to studio_path, notice: "Album was successfully deleted."
+      audit!("moderation.album.deleted", nil, album_id: album_id, name: album_name)
+      redirect_to moderation_albums_path, notice: "Альбом удалён."
     else
-      redirect_to studio_path, alert: "Album was not deleted."
+      redirect_to album_path(@album), alert: @album.errors.full_messages.to_sentence
     end
   end
+
   def update
-
-  end
-
-  def set_user
-    @album = Album.find(params[:id])
-    @user = @album.user
-    unless @user.present?
-      redirect_to studio_path, alert: "Пользователь не найден"
+    if @album.update(album_update_params)
+      audit!("moderation.album.updated", @album, name: @album.name, artist_id: @album.artist_id)
+      redirect_to album_path(@album), notice: "Альбом обновлён."
+    else
+      redirect_to album_path(@album), alert: @album.errors.full_messages.to_sentence
     end
   end
 
-  def authorize_settings_access!
-    unless UserPolicy.new(current_user, @user).settings?
-      flash[:alert] = "У вас нет доступа к альбомам этого пользователя!"
-      redirect_to studio_path
-    end
+  private
+
+  def set_album
+    @album = Album.find_by(id: params[:id])
+    redirect_to root_path, alert: "Альбом не найден" unless @album.present?
+  end
+
+  def authorize_album_management!
+    authorize Album, :manage?
   end
 
   def album_params
+    params.require(:album).permit(:name, :release_date, :cover_image, :artist_id)
+  end
+
+  def album_update_params
     params.require(:album).permit(:name, :release_date, :cover_image)
   end
 end

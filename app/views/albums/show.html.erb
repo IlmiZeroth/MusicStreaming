@@ -1,48 +1,86 @@
 <%= render "shared/header" %>
-<div class = "album-page">
-  <div class = "album-info flex gap-3 pl-3 mt-3 pb-5 border-b border-solid border-b-neutral-800">
-    <div class = "return text-neutral-400 w-8 h-8">
-      <%= link_to :back do %>
-        <%= image_tag 'left.svg' %>
-      <% end %>
-    </div>
-    <div class = "album-cover h-40 w-40">
-      <% if @album.cover_image.attached? %>
-        <%= image_tag @album.cover_image, class: "w-full h-full object-cover rounded-2xl" %>
-      <% else %>
-        <%= image_tag 'default-music.svg', class: "w-full h-full object-cover rounded-2xl"  %>
-      <% end %>
-    </div>
-    <div class = "artist-details flex-col">
-      <div class = "artist-name ml-1">
-        <p class = "text-neutral-500 text-l">Альбом</p>
-        <p class = "text-white text-2xl"><%= @album.name %></p>
-      </div>
-      <div class = "artist-stats flex h-7 gap-3 mt-3">
-        <div class = "streams text-white bg-neutral-800 ps-3 pe-3 rounded-2xl"><%= number_with_delimiter @album.total_streams %> слушателя в месяц</div>
-        <div class = "tracks-count text-white bg-neutral-800 ps-3 pe-3 rounded-2xl"> <%= number_with_delimiter @album.tracks_count %> треков </div>
-      </div>
-      <div class = "control-buttons flex gap-3 items-center">
-        <div class = "listen-button h-10 mt-3">
-          <button class = "bg-green-400 flex gap-2 justify-center items-center hover:text-gray-700 hover:cursor-pointer border border-solid rounded-2xl border-green-400 pt-1 pb-1 ps-3 pe-3 text-black">
-            <%= image_tag "play.svg", class: "w-5 h-5"%> Слушать
-          </button>
-        </div>
-        <div class="like-album-button h-10 mt-3 flex items-center">
-          <%= render 'shared/album_like_button', album: @album %>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class = "album-content">
-    <div class = "tracks flex flex-col gap-5 mt-3 pb-1 overflow-x-auto">
-      <% @tracks.each do |track| %>
-        <%= render "shared/track", track: track%>
-      <% end %>
-    </div>
-    <% if @show_actions %>
-      <%= render "shared/track_create" %>
-    <% end %>
+<% album_queue = player_tracks_payload(@tracks) %>
+<% first_album_track = album_queue.first %>
 
-  </div>
-</div>
+<main class="<%= page_shell_class %>">
+  <section class="rounded-[2rem] border border-neutral-800 bg-neutral-900/70 p-5 shadow-xl shadow-black/20 sm:p-7">
+    <button type="button"
+            data-controller="smart-back"
+            data-action="click->smart-back#goBack"
+            data-smart-back-fallback-url-value="<%= profile_path(@artist) %>"
+            class="mb-5 inline-flex items-center gap-2 rounded-2xl bg-neutral-950/70 px-3 py-2 text-sm text-neutral-300 ring-1 ring-neutral-800 transition hover:bg-neutral-800 hover:text-white">
+      <%= image_tag 'left.svg', class: "h-4 w-4" %> Назад
+    </button>
+
+    <div class="grid gap-6 md:grid-cols-[12rem_1fr] md:items-end">
+      <div class="aspect-square overflow-hidden rounded-[2rem] bg-neutral-800 ring-1 ring-neutral-800">
+        <% if @album.cover_image.attached? %>
+          <%= image_tag @album.cover_image, class: "h-full w-full object-cover", alt: @album.name %>
+        <% else %>
+          <div class="flex h-full w-full items-center justify-center p-10"><%= image_tag 'default-music.svg', class: "h-full w-full", alt: @album.name %></div>
+        <% end %>
+      </div>
+
+      <div class="min-w-0">
+        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500">Альбом</p>
+        <h1 class="mt-2 truncate text-4xl font-black tracking-tight text-white sm:text-5xl" title="<%= @album.name %>"><%= @album.name %></h1>
+        <p class="mt-2 text-neutral-400"><%= link_to @artist.name, profile_path(@artist), class: "hover:text-white" %></p>
+        <div class="mt-5 flex flex-wrap gap-2 text-sm text-neutral-300">
+          <span class="rounded-full bg-neutral-950/70 px-3 py-1.5 ring-1 ring-neutral-800"><%= number_with_delimiter @album.total_streams %> прослушиваний</span>
+          <span class="rounded-full bg-neutral-950/70 px-3 py-1.5 ring-1 ring-neutral-800"><%= number_with_delimiter @album.tracks_count %> треков</span>
+          <% if @album.release_date.present? %><span class="rounded-full bg-neutral-950/70 px-3 py-1.5 ring-1 ring-neutral-800"><%= @album.release_date.year %></span><% end %>
+        </div>
+
+        <div class="mt-6 flex flex-wrap items-center gap-3">
+          <% if first_album_track.present? %>
+            <button type="button"
+                    data-controller="album-card"
+                    data-action="click->album-card#playTrack"
+                    data-album-card-id-value="<%= first_album_track[:id] %>"
+                    data-album-card-artist-value="<%= first_album_track[:artist] %>"
+                    data-album-card-name-value="<%= first_album_track[:name] %>"
+                    data-album-card-url-value="<%= first_album_track[:url] %>"
+                    data-album-card-metadata-url-value="<%= first_album_track[:metadataUrl] %>"
+                    data-album-card-duration-value="<%= first_album_track[:duration] %>"
+                    data-album-card-image-value="<%= first_album_track[:image] %>"
+                    data-album-card-liked-value="<%= first_album_track[:liked] %>"
+                    data-album-card-like-url-value="<%= first_album_track[:likeUrl] %>"
+                    data-album-card-unlike-url-value="<%= first_album_track[:unlikeUrl] %>"
+                    data-album-card-queue-name-value="Альбом: <%= @album.name %>"
+                    data-album-card-queue-value="<%= album_queue.to_json %>"
+                    data-album-card-context-type-value="album"
+                    data-album-card-context-id-value="<%= @album.id %>"
+                    data-album-card-context-url-value="<%= album_path(@album) %>"
+                    data-album-card-play-icon-value="<%= asset_path('play.svg') %>"
+                    data-album-card-pause-icon-value="<%= asset_path('pause.svg') %>"
+                    class="inline-flex items-center gap-2 rounded-2xl bg-green-400 px-5 py-3 font-bold text-black transition hover:bg-green-300">
+              <%= image_tag "play.svg", class: "h-5 w-5", data: { album_card_target: "playIcon" } %> Слушать
+            </button>
+          <% else %>
+            <button type="button" disabled class="inline-flex items-center gap-2 rounded-2xl bg-neutral-800 px-5 py-3 font-bold text-neutral-500 cursor-not-allowed"><%= image_tag "play.svg", class: "h-5 w-5 opacity-50" %> Слушать</button>
+          <% end %>
+          <%= render 'shared/album_like_button', album: @album, button_class: 'flex h-12 w-12 items-center justify-center rounded-2xl border border-neutral-700 bg-neutral-950/70 transition hover:bg-neutral-800', icon_class: 'h-7 w-7' %>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mt-8">
+    <div class="mb-4 flex items-end justify-between gap-4"><div><p class="text-sm text-neutral-500">Треклист</p><h2 class="text-2xl font-bold text-white">Треки</h2></div></div>
+    <% if @tracks.present? %>
+      <div class="flex flex-col gap-3" data-playback-queue-name-value="Альбом: <%= @album.name %>" data-playback-context-type-value="album" data-playback-context-id-value="<%= @album.id %>" data-playback-context-url-value="<%= album_path(@album) %>">
+        <% @tracks.each do |track| %><%= render "shared/track", track: track %><% end %>
+      </div>
+    <% else %>
+      <%= render "shared/empty_state", title: "В альбоме пока нет треков", description: "Когда модераторы загрузят треки, они появятся здесь." %>
+    <% end %>
+  </section>
+
+  <% if @show_actions %>
+    <section class="mt-8 rounded-[2rem] border border-neutral-800 bg-neutral-900/70 p-5 sm:p-6">
+      <h2 class="text-xl font-bold text-white">Загрузка треков</h2>
+      <p class="mt-1 text-sm text-neutral-400">Треки добавляются через массовую загрузку: можно перенести один файл или сразу пачку.</p>
+      <%= link_to "Загрузить треки", bulk_new_moderation_tracks_path(album_id: @album.id), class: "mt-4 inline-flex rounded-2xl bg-green-400 px-5 py-3 font-bold text-black transition hover:bg-green-300" %>
+    </section>
+  <% end %>
+</main>

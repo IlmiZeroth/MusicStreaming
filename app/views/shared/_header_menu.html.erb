@@ -1,0 +1,24 @@
+<div class="border-b border-neutral-800 px-4 py-4">
+  <div class="flex items-center gap-3">
+    <%= image_tag user_avatar_url(current_user), class: "h-11 w-11 rounded-2xl object-cover ring-1 ring-neutral-800", alt: current_user.username %>
+    <div class="min-w-0">
+      <div class="truncate font-bold text-white"><%= current_user.username %></div>
+      <div class="truncate text-sm text-neutral-500"><%= current_user.email %></div>
+    </div>
+  </div>
+</div>
+<div class="p-2">
+  <%= link_to "Главная", pages_path, class: "block rounded-2xl px-3 py-2 text-neutral-300 transition hover:bg-neutral-900 hover:text-white" %>
+  <%= link_to "Моя коллекция", collection_index_path, class: "block rounded-2xl px-3 py-2 text-neutral-300 transition hover:bg-neutral-900 hover:text-white" %>
+  <% if current_user.staff? %>
+    <%= link_to "Панель модерации", moderation_root_path, class: "block rounded-2xl px-3 py-2 text-neutral-300 transition hover:bg-neutral-900 hover:text-white" %>
+  <% end %>
+  <% if current_user.admin? %>
+    <%= link_to "Админ-панель", admin_root_path, class: "block rounded-2xl px-3 py-2 text-neutral-300 transition hover:bg-neutral-900 hover:text-white" %>
+    <%= link_to "Внутренние письма", admin_mail_messages_path, class: "block rounded-2xl px-3 py-2 text-neutral-300 transition hover:bg-neutral-900 hover:text-white" %>
+  <% end %>
+  <%= link_to "Настройки аккаунта", profile_settings_path(current_user), class: "block rounded-2xl px-3 py-2 text-neutral-300 transition hover:bg-neutral-900 hover:text-white" %>
+</div>
+<div class="border-t border-neutral-800 p-2">
+  <%= button_to "Выйти", destroy_user_session_path, method: :delete, form: { data: { turbo: false } }, class: "w-full rounded-2xl px-3 py-2 text-left text-red-300 transition hover:bg-red-500/10 hover:text-red-200 cursor-pointer" %>
+</div>

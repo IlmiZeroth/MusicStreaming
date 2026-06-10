@@ -1,22 +1,53 @@
-<div class="playlist-card relative text-white bg-neutral-800 h-58 w-46 rounded-2xl flex flex-col justify-center items-center flex-shrink-0 overflow-hidden">
-  <div class="cover-image group relative bg-neutral-700 h-36 w-40 rounded-2xl flex-shrink-0 flex items-center justify-center">
-    <%= image_tag 'default-music.svg', class: 'w-[70%] h-[70%]' %>
+<% playlist_tracks = playlist.tracks.includes(album: [:artist, { cover_image_attachment: :blob }]).to_a %>
+<% playlist_queue = player_tracks_payload(playlist_tracks) %>
+<% first_track = playlist_tracks.first %>
+<% first_track_audio_url = first_track&.audio_file&.attached? ? audio_track_path(first_track) : '' %>
+<% first_track_metadata_url = first_track&.audio_file&.attached? ? metadata_track_path(first_track) : '' %>
+<% first_track_liked = first_track.present? ? current_user.liked_track?(first_track) : false %>
+<% playlist_image_url = playlist_cover_url(playlist) %>
 
-    <% if local_assigns.fetch(:show_like, true) %>
-      <div class="absolute inset-0 flex items-end justify-end rounded-2xl bg-black/20 backdrop-blur-sm opacity-0 transition-opacity duration-300 group-hover:opacity-100 p-3">
-        <%= render 'shared/playlist_like_button',
-                   playlist: playlist,
-                   button_class: 'pointer-events-auto hover:cursor-pointer rounded-full bg-neutral-900/90 p-1.5 hover:bg-neutral-700 transition-colors',
-                   icon_class: 'w-8 h-8' %>
-      </div>
+<div data-controller="album-card"
+     data-album-card-id-value="<%= first_track&.id %>"
+     data-album-card-artist-value="<%= first_track&.artist&.name || playlist.user.username %>"
+     data-album-card-name-value="<%= first_track&.name || playlist.name %>"
+     data-album-card-url-value="<%= first_track_audio_url %>"
+     data-album-card-metadata-url-value="<%= first_track_metadata_url %>"
+     data-album-card-duration-value="<%= first_track&.duration %>"
+     data-album-card-image-value="<%= playlist_image_url %>"
+     data-album-card-liked-value="<%= first_track_liked %>"
+     data-album-card-like-url-value="<%= like_track_path(first_track) if first_track.present? %>"
+     data-album-card-unlike-url-value="<%= unlike_track_path(first_track) if first_track.present? %>"
+     data-album-card-queue-name-value="Плейлист: <%= playlist.name %>"
+     data-album-card-queue-value="<%= playlist_queue.to_json %>"
+     data-album-card-context-type-value="playlist"
+     data-album-card-context-id-value="<%= playlist.id %>"
+     data-album-card-context-url-value="<%= playlist_path(playlist) %>"
+     data-album-card-play-icon-value="<%= asset_path('play.svg') %>"
+     data-album-card-pause-icon-value="<%= asset_path('pause.svg') %>"
+     class="group w-40 shrink-0 rounded-[1.5rem] border border-neutral-800 bg-neutral-900/75 p-3 text-white shadow-lg shadow-black/10 transition duration-200 hover:border-neutral-700 hover:bg-neutral-900 sm:w-48 sm:p-4">
+  <div class="relative aspect-square overflow-hidden rounded-[1.25rem] bg-neutral-800 ring-1 ring-neutral-800" data-album-card-target="artwork">
+    <%= link_to playlist_path(playlist), class: "block h-full w-full", title: playlist.name do %>
+      <%= image_tag playlist_image_url, class: "h-full w-full object-cover transition duration-300 group-hover:scale-105", alt: playlist.name %>
     <% end %>
+
+    <div class="absolute inset-0 flex items-end justify-between bg-gradient-to-t from-black/70 via-black/10 to-transparent p-3 opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100 pointer-events-none">
+      <button type="button"
+              data-action="click->album-card#playTrack"
+              class="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-green-400 text-black shadow-lg shadow-black/30 transition hover:bg-green-300 disabled:opacity-40 disabled:cursor-default"
+              title="Воспроизвести плейлист"
+              <%= 'disabled' unless first_track.present? && first_track_audio_url.present? %>>
+        <%= image_tag "play.svg", class: "h-7 w-7", data: { album_card_target: "playIcon" } %>
+      </button>
+
+      <% if local_assigns.fetch(:show_like, true) %>
+        <%= render 'shared/playlist_like_button', playlist: playlist, button_class: 'pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-neutral-950/85 shadow-lg shadow-black/30 transition hover:bg-neutral-800', icon_class: 'h-6 w-6' %>
+      <% end %>
+    </div>
   </div>
 
-  <div class="playlist-name mt-2 truncate w-40">
-    <%= playlist.name %>
-  </div>
-
-  <div class="playlist-owner text-neutral-400 truncate w-40 hover:text-gray-400">
-    <%= link_to playlist.user.username, profile_path(playlist.user) %>
+  <div class="mt-3 min-w-0">
+    <div class="truncate font-semibold text-white" title="<%= playlist.name %>"><%= link_to playlist.name, playlist_path(playlist), class: "hover:text-green-300" %></div>
+    <div class="mt-1 truncate text-sm text-neutral-400" title="<%= playlist.user.username %>"><%= playlist.user.username %></div>
+    <div class="mt-1 truncate text-xs text-neutral-500"><%= playlist_tracks.size %> треков</div>
   </div>
 </div>

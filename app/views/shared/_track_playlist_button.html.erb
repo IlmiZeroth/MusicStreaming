@@ -1,0 +1,17 @@
+<% button_class = local_assigns[:button_class] || "flex h-10 w-10 items-center justify-center rounded-2xl bg-neutral-950/80 text-lg font-black text-green-300 transition hover:bg-neutral-800 hover:text-green-200 hover:cursor-pointer" %>
+<% label = local_assigns[:label] || "＋" %>
+<% title = local_assigns[:title] || "Сохранить в плейлист" %>
+
+<div data-controller="track-playlist"
+     data-track-playlist-track-id-value="<%= track.id %>"
+     data-track-playlist-save-url-value="<%= save_track_playlists_path %>"
+     data-track-playlist-playlists-value="<%= playlist_options_payload.to_json %>"
+     class="relative shrink-0">
+  <button type="button"
+          data-action="click->track-playlist#toggle"
+          class="<%= button_class %>"
+          title="<%= title %>"
+          aria-label="<%= title %>">
+    <span aria-hidden="true"><%= label %></span>
+  </button>
+</div>

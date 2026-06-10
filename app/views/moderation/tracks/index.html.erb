@@ -1,0 +1,97 @@
+<%= render "shared/header" %>
+
+<main class="<%= page_shell_class %>">
+  <section class="rounded-[2rem] border border-neutral-800 bg-neutral-900/70 p-5 shadow-xl shadow-black/20 sm:p-7">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <div>
+        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-green-300">Аудио</p>
+        <h1 class="mt-2 text-3xl font-black text-white sm:text-4xl">Треки</h1>
+        <p class="mt-2 text-neutral-400">Загрузка аудио, запуск треков и статус анализа.</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <%= link_to "+ Загрузить треки", bulk_new_moderation_tracks_path, class: primary_button_class %>
+        <%= link_to "Панель", moderation_root_path, class: secondary_button_class %>
+      </div>
+    </div>
+  </section>
+
+  <section class="mt-6 rounded-[2rem] border border-neutral-800 bg-neutral-900/70 p-4 sm:p-6">
+    <%= render "shared/pagination_filter", label: "Поиск треков", placeholder: "Трек, альбом, артист, статус, номер или ID" %>
+
+    <div class="overflow-x-auto"
+         data-playback-queue-name-value="Модерация: треки"
+         data-playback-context-type-value="moderation_tracks"
+         data-playback-context-url-value="<%= request.fullpath %>">
+      <table class="w-full min-w-[1020px] text-left text-sm">
+        <thead class="border-b border-neutral-800 text-neutral-500">
+          <tr>
+            <th class="py-3 font-medium">Трек</th>
+            <th class="font-medium">Артист</th>
+            <th class="font-medium">Альбом</th>
+            <th class="font-medium">№</th>
+            <th class="font-medium">Waveform</th>
+            <th class="font-medium">Стримы</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-neutral-800/80">
+          <% @tracks.each do |track| %>
+            <% track_audio_url = track.audio_file.attached? ? audio_track_path(track) : "" %>
+            <% track_metadata_url = track.audio_file.attached? ? metadata_track_path(track) : "" %>
+            <% track_image_url = track.album.cover_image.attached? ? url_for(track.album.cover_image) : asset_path("default-music.svg") %>
+            <% liked = current_user.liked_track?(track) %>
+
+            <tr data-controller="track-card"
+                data-track-card-target="active"
+                data-track-card-id-value="<%= track.id %>"
+                data-track-card-artist-value="<%= track.artist.name %>"
+                data-track-card-name-value="<%= track.name %>"
+                data-track-card-url-value="<%= track_audio_url %>"
+                data-track-card-metadata-url-value="<%= track_metadata_url %>"
+                data-track-card-duration-value="<%= track.duration %>"
+                data-track-card-image-value="<%= track_image_url %>"
+                data-track-card-liked-value="<%= liked %>"
+                data-track-card-like-url-value="<%= like_track_path(track) %>"
+                data-track-card-unlike-url-value="<%= unlike_track_path(track) %>"
+                data-track-card-play-icon-value="<%= asset_path('play.svg') %>"
+                data-track-card-pause-icon-value="<%= asset_path('pause.svg') %>"
+                class="transition hover:bg-neutral-900/60 px-5">
+              <td class="py-3">
+                <div class="flex min-w-0 items-center gap-3">
+                  <button type="button"
+                          data-action="click->track-card#playTrack"
+                          data-track-card-target="artwork"
+                          class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-neutral-800 ring-1 ring-neutral-800 transition hover:bg-neutral-700 hover:cursor-pointer disabled:opacity-40 disabled:cursor-default"
+                          title="Воспроизвести"
+                          aria-label="Воспроизвести"
+                          <%= "disabled" if track_audio_url.blank? %>>
+                    <%= image_tag "play.svg", class: "h-7 w-7", data: { track_card_target: "playIcon" } %>
+                  </button>
+                  <div class="min-w-0">
+                    <div class="truncate font-semibold text-white" title="<%= track.name %>"><%= track.name %></div>
+                    <div class="text-xs text-neutral-500">ID <%= track.id %></div>
+                  </div>
+                </div>
+              </td>
+              <td><%= link_to track.artist.name, profile_path(track.artist), class: "text-neutral-300 hover:text-white" %></td>
+              <td><%= link_to track.album.name, album_path(track.album), class: "text-neutral-300 hover:text-white" %></td>
+              <td><%= track.number_in_album %></td>
+              <td><span class="rounded-full bg-neutral-950 px-3 py-1 ring-1 ring-neutral-800 <%= 'text-red-300' if track.audio_analysis_status == 'failed' %>"><%= track.audio_analysis_status %></span></td>
+              <td><%= track.streams %></td>
+              <td class="py-3 text-right">
+                <div class="flex justify-end gap-3">
+                  <%= link_to "Редактировать", edit_moderation_track_path(track), class: "text-neutral-300 hover:text-white" %>
+                  <%= button_to "Удалить", moderation_track_path(track), method: :delete, data: { turbo_confirm: "Удалить трек #{track.name}?" }, class: "text-red-300 hover:text-red-200 cursor-pointer" %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+          <% if @tracks.empty? %>
+            <tr><td colspan="7" class="py-8 text-neutral-400">Треков пока нет.</td></tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <%= render "shared/pagination", pagination: @pagination %>
+  </section>
+</main>

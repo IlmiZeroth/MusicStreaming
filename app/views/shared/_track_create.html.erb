@@ -1,19 +1,16 @@
-<div class = "create-album text-white flex justify-center">
-    <%= form_with model: Track.new, local: true, html: { multipart: true, class: "mt-5 mb-5 pt-3 pb-3 pr-5 pl-5 rounded-2xl gap-7 flex flex-row items-center justify-center bg-neutral-800 flex-wrap" } do |f| %>
-    <div class = "flex flex-col">
-        <%= f.label :name, "Название трека *", class: "" %>
-        <%= f.text_field :name, class: "bg-neutral-700 rounded-2xl pl-1 pr-1 pt-1 pb-1", required: true %>
+<section class="mt-8 rounded-[2rem] border border-neutral-800 bg-neutral-900/70 p-5 sm:p-6">
+  <h2 class="text-xl font-bold text-white">Быстро добавить трек</h2>
+  <p class="mt-1 text-sm text-neutral-400">Для полноценной загрузки с поиском альбома используйте панель модерации.</p>
+  <%= form_with model: Track.new, local: true, html: { multipart: true, class: "mt-4 grid gap-4 md:grid-cols-[1fr_1fr_auto] md:items-end" } do |f| %>
+    <div>
+      <%= f.label :name, "Название трека *", class: "mb-2 block text-sm text-neutral-400" %>
+      <%= f.text_field :name, class: "w-full rounded-2xl border border-neutral-800 bg-neutral-950/70 px-4 py-3 text-white outline-none focus:border-green-400", required: true %>
     </div>
-
-    <div class = "flex flex-col">
-        <%= f.label :audio_file, "Аудиофайл *", class: "" %>
-        <%= f.file_field :audio_file, class: "bg-neutral-700 rounded-2xl pl-1 pr-1 pt-1 pb-1 file:bg-neutral-400 file:rounded-2xl file:pl-2 file:pr-2", accept: "audio/*", required: true %>
+    <div>
+      <%= f.label :audio_file, "Аудиофайл *", class: "mb-2 block text-sm text-neutral-400" %>
+      <%= f.file_field :audio_file, class: "w-full rounded-2xl border border-neutral-800 bg-neutral-950/70 px-4 py-3 text-white file:mr-4 file:rounded-xl file:border-0 file:bg-neutral-800 file:px-3 file:py-2 file:text-white", accept: "audio/*", required: true %>
     </div>
-
     <%= f.hidden_field :album_id, value: @album.id %>
-
-    <div class = "flex flex-col bg-green-500 mt-6 rounded-2xl hover:cursor-pointer hover:bg-green-400 transition-colors delay-75">
-        <%= f.submit "+ Добавить трек", class: "pl-1 pr-1 pt-1 pb-1" %>
-    </div>
-    <% end %>
-</div>
+    <%= f.submit "+ Добавить", class: "rounded-2xl bg-green-400 px-5 py-3 font-bold text-black transition hover:bg-green-300 cursor-pointer" %>
+  <% end %>
+</section>

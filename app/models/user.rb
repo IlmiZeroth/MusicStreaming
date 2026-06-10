@@ -1,9 +1,25 @@
 class User < ApplicationRecord
-  devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :validatable
+  ROLES = {
+    user: 0,
+    moderator: 1,
+    admin: 2
+  }.freeze
 
-  has_many :albums, dependent: :destroy
-  has_many :tracks, through: :albums
+  ROLE_LABELS = {
+    "user" => "Пользователь",
+    "moderator" => "Модератор",
+    "admin" => "Администратор"
+  }.freeze
+
+  attr_writer :login
+
+  devise :database_authenticatable, :registerable,
+         :recoverable, :rememberable, :validatable,
+         authentication_keys: [:login]
+
+  has_many :created_artists, class_name: "Artist", foreign_key: :created_by_id, dependent: :nullify
+
+  has_one_attached :avatar
 
   has_many :playlists, dependent: :destroy
 
@@ -16,49 +32,72 @@ class User < ApplicationRecord
   has_many :playlist_likes, dependent: :destroy
   has_many :liked_playlists, through: :playlist_likes, source: :playlist
 
-  # Люди, на которых пользователь подписан
-  has_many :active_follows, class_name: 'Follow', foreign_key: :follower_id, dependent: :destroy
+  has_many :audit_logs, foreign_key: :actor_id, dependent: :nullify
+
+  # Артисты, на которых пользователь подписан.
+  has_many :active_follows, class_name: "Follow", foreign_key: :follower_id, dependent: :destroy
   has_many :following, through: :active_follows, source: :followed
 
-  # Люди, которые подписались на пользователя
-  has_many :passive_follows, class_name: 'Follow', foreign_key: :followed_id, dependent: :destroy
-  has_many :followers, through: :passive_follows, source: :follower
-
-  has_one_attached :avatar
-
   validates :username, presence: true, uniqueness: true, length: { minimum: 3, maximum: 50 }
-  validates :description, length: { maximum: 500 }
+  validates :user_role, inclusion: { in: ROLES.values }
+
+  def self.find_for_database_authentication(warden_conditions)
+    conditions = warden_conditions.dup
+    login = (conditions.delete(:login) || conditions.delete("login")).to_s.downcase.strip
+
+    if login.present?
+      where(conditions.to_h).where("LOWER(username) = :login OR LOWER(email) = :login", login: login).first
+    else
+      super
+    end
+  end
+
+  def login
+    @login || username || email
+  end
 
   def admin?
-    user_role == 2
+    user_role.to_i == ROLES[:admin]
   end
 
   def moderator?
-    user_role == 1
+    user_role.to_i == ROLES[:moderator]
+  end
+
+  def staff?
+    admin? || moderator?
   end
 
   def user?
-    user_role == 0
+    user_role.to_i == ROLES[:user]
   end
 
-  def total_streams
-    tracks.joins(:album).where(albums: { user_id: id }).sum(:streams)
+  def role_name
+    ROLES.key(user_role.to_i).to_s.presence || "user"
   end
 
-  def unfollow(other_user)
-    return false if self == other_user
-
-    active_follows.find_by(followed: other_user)&.destroy
+  def role_label
+    ROLE_LABELS.fetch(role_name, "Пользователь")
   end
 
-  def follow_to(other_user)
-    return false if self == other_user || following?(other_user)
-
-    active_follows.create(followed: other_user)
+  def self.role_options
+    ROLE_LABELS.map { |role, label| [label, ROLES.fetch(role.to_sym)] }
   end
 
-  def following?(user)
-    active_follows.exists?(followed: user)
+  def unfollow(artist)
+    active_follows.find_by(followed: artist)&.destroy
+  end
+
+  def follow_to(artist)
+    return false if following?(artist)
+
+    active_follows.create(followed: artist)
+  end
+
+  def following?(artist)
+    return false unless artist.present?
+
+    active_follows.exists?(followed: artist)
   end
 
   def liked_track?(track)
@@ -95,13 +134,5 @@ class User < ApplicationRecord
 
   def unlike_playlist(playlist)
     playlist_likes.find_by(playlist: playlist)&.destroy
-  end
-
-  def tracks_count
-    tracks.count
-  end
-
-  def albums_count
-    albums.count
   end
 end

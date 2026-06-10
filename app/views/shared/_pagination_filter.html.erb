@@ -1,0 +1,22 @@
+<% placeholder = local_assigns.fetch(:placeholder, "Поиск") %>
+<% label = local_assigns.fetch(:label, "Фильтр") %>
+<% query_value = params[:q].to_s %>
+
+<div class="mb-4 rounded-[1.5rem] border border-neutral-800 bg-neutral-950/45 p-3 sm:p-4">
+  <%= form_with url: request.path, method: :get, class: "flex flex-col gap-3 sm:flex-row sm:items-end", data: { turbo_frame: "_top" } do |form| %>
+    <div class="min-w-0 flex-1">
+      <%= form.label :q, label, class: "mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500" %>
+      <%= form.search_field :q,
+                            value: query_value,
+                            placeholder: placeholder,
+                            autocomplete: "off",
+                            class: "w-full rounded-2xl border border-neutral-800 bg-neutral-900 px-4 py-3 text-sm text-white outline-none transition placeholder:text-neutral-600 focus:border-green-400/70 focus:ring-2 focus:ring-green-400/20" %>
+    </div>
+    <div class="flex gap-2">
+      <%= form.submit "Найти", class: "rounded-2xl bg-green-400 px-4 py-3 text-sm font-bold text-black transition hover:bg-green-300 hover:cursor-pointer" %>
+      <% if query_value.present? %>
+        <%= link_to "Сбросить", request.path, class: "rounded-2xl border border-neutral-700 bg-neutral-900 px-4 py-3 text-sm font-semibold text-neutral-200 transition hover:border-neutral-600 hover:bg-neutral-800" %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

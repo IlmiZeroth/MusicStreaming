@@ -1,109 +1,66 @@
 <%= render "shared/header" %>
 
-<div class="collection-page text-white mb-40">
-  <div class="ml-5 mr-5 mt-6 flex flex-col gap-7">
-    <div class="flex flex-col gap-2">
-      <p class="text-neutral-400">Моя коллекция</p>
-      <h1 class="text-4xl font-bold">Всё, что вам понравилось</h1>
+<main class="<%= page_shell_class %>">
+  <section class="rounded-[2rem] border border-neutral-800 bg-neutral-900/70 p-5 shadow-xl shadow-black/20 sm:p-7">
+    <div class="grid gap-6 lg:grid-cols-[1fr_24rem] lg:items-center">
+      <div>
+        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-green-300">Моя коллекция</p>
+        <h1 class="mt-2 text-3xl font-black text-white sm:text-4xl">Всё, что вам понравилось</h1>
+        <p class="mt-2 max-w-2xl text-neutral-400">Подписки, любимые треки, альбомы и ваши плейлисты собраны в одном пространстве.</p>
+      </div>
+      <div class="rounded-[1.5rem] border border-neutral-800 bg-neutral-950/60 p-4">
+        <h2 class="text-lg font-bold text-white">Создать плейлист</h2>
+        <%= form_with model: @playlist, url: playlists_path, class: "mt-3 grid gap-3" do |form| %>
+          <%= form.text_field :name, placeholder: "Название", class: "rounded-2xl border border-neutral-800 bg-neutral-900 px-4 py-3 text-sm text-white outline-none focus:border-green-400" %>
+          <%= form.text_field :description, placeholder: "Описание, необязательно", class: "rounded-2xl border border-neutral-800 bg-neutral-900 px-4 py-3 text-sm text-white outline-none focus:border-green-400" %>
+          <%= form.submit "Создать", class: "rounded-2xl bg-green-400 px-4 py-3 font-bold text-black transition hover:bg-green-300 hover:cursor-pointer" %>
+        <% end %>
+      </div>
     </div>
+  </section>
 
-    <div class="create-playlist rounded-2xl bg-neutral-800 p-5">
-      <div class="flex flex-col gap-1 mb-4">
-        <h2 class="text-2xl">Создать плейлист</h2>
-        <p class="text-neutral-400">Пока плейлист только создаётся и отображается в коллекции. Наполнение треками можно доделать отдельной веткой.</p>
+  <section class="mt-8" data-controller="horizontal-scroll">
+    <div class="flex items-end justify-between gap-4"><div><p class="text-sm text-neutral-500">Подписки</p><h2 class="text-2xl font-bold text-white">Любимые артисты <span class="text-neutral-500"><%= @artists.size %></span></h2></div><div class="hidden items-center gap-2 sm:flex"><button type="button" data-action="horizontal-scroll#scrollPrevious" data-horizontal-scroll-target="previousButton" class="rounded-full bg-neutral-900 p-2 ring-1 ring-neutral-800 hover:bg-neutral-800 disabled:opacity-30"><%= image_tag 'left.svg', class: 'h-5 w-5' %></button><button type="button" data-action="horizontal-scroll#scrollNext" data-horizontal-scroll-target="nextButton" class="rounded-full bg-neutral-900 p-2 ring-1 ring-neutral-800 hover:bg-neutral-800 disabled:opacity-30"><%= image_tag 'right.svg', class: 'h-5 w-5' %></button></div></div>
+    <% if @artists.present? %>
+      <div class="mt-4 flex gap-4 overflow-x-auto pb-3" data-collection-list="artists" data-horizontal-scroll-target="scroller" data-action="wheel->horizontal-scroll#scrollByWheel scroll->horizontal-scroll#updateButtons">
+        <% @artists.each do |artist| %><%= render 'shared/artist_card', artist: artist, show_actions: true %><% end %>
       </div>
+      <p class="mt-3 hidden rounded-2xl border border-neutral-800 bg-neutral-900 p-5 text-neutral-400" data-collection-empty="artists">Здесь появятся артисты, на которых вы подпишетесь.</p>
+    <% else %>
+      <%= render "shared/empty_state", title: "Любимых артистов пока нет", description: "Откройте страницу артиста и подпишитесь, чтобы он появился здесь." %>
+    <% end %>
+  </section>
 
-      <%= form_with model: @playlist, url: playlists_path, class: "grid grid-cols-3 gap-3" do |form| %>
-        <%= form.text_field :name,
-                            placeholder: "Название плейлиста",
-                            class: "bg-neutral-700 rounded-2xl px-4 py-2 text-white outline-none focus:ring-2" %>
-        <%= form.text_field :description,
-                            placeholder: "Описание, необязательно",
-                            class: "bg-neutral-700 rounded-2xl px-4 py-2 text-white outline-none focus:ring-2" %>
-        <%= form.submit "Создать",
-                        class: "bg-green-400 text-black rounded-2xl px-4 py-2 hover:cursor-pointer hover:text-gray-700 transition-colors" %>
-      <% end %>
-    </div>
-
-    <section class="following section">
-      <div class="flex items-end justify-between gap-3">
-        <h2 class="text-2xl">Любимые артисты</h2>
-        <span class="text-neutral-400" data-collection-count="artists"><%= @artists.size %></span>
+  <section class="mt-8" data-playback-queue-name-value="Понравившиеся треки">
+    <div class="mb-4"><p class="text-sm text-neutral-500">Ваши лайки</p><h2 class="text-2xl font-bold text-white">Понравившиеся треки <span class="text-neutral-500"><%= @liked_tracks.size %></span></h2></div>
+    <% if @liked_tracks.present? %>
+      <div class="flex flex-col gap-3">
+        <% @liked_tracks.each do |track| %><%= render 'shared/track', track: track, show_actions: false, show_like: true %><% end %>
       </div>
-      <% if @artists.present? %>
-        <div class="flex flex-row gap-5 mt-3 pb-1 overflow-x-auto" data-collection-list="artists">
-          <% @artists.each do |artist| %>
-            <%= render 'shared/artist_card', artist: artist, show_actions: true %>
-          <% end %>
-        </div>
-        <p class="mt-3 hidden rounded-2xl bg-neutral-800 p-5 text-neutral-400" data-collection-empty="artists">Здесь появятся артисты, на которых вы подпишетесь.</p>
-      <% else %>
-        <p class="mt-3 rounded-2xl bg-neutral-800 p-5 text-neutral-400" data-collection-empty="artists">Здесь появятся артисты, на которых вы подпишетесь.</p>
-      <% end %>
-    </section>
+    <% else %>
+      <%= render "shared/empty_state", title: "Понравившихся треков пока нет", description: "Нажимайте на плюс у треков — они появятся здесь." %>
+    <% end %>
+  </section>
 
-    <section class="liked-tracks section">
-      <div class="flex items-end justify-between gap-3">
-        <h2 class="text-2xl">Понравившиеся треки</h2>
-        <span class="text-neutral-400"><%= @liked_tracks.size %></span>
+  <section class="mt-8" data-controller="horizontal-scroll">
+    <div class="flex items-end justify-between gap-4"><div><p class="text-sm text-neutral-500">Сохранённые релизы</p><h2 class="text-2xl font-bold text-white">Любимые альбомы <span class="text-neutral-500"><%= @liked_albums.size %></span></h2></div><div class="hidden items-center gap-2 sm:flex"><button type="button" data-action="horizontal-scroll#scrollPrevious" data-horizontal-scroll-target="previousButton" class="rounded-full bg-neutral-900 p-2 ring-1 ring-neutral-800 hover:bg-neutral-800 disabled:opacity-30"><%= image_tag 'left.svg', class: 'h-5 w-5' %></button><button type="button" data-action="horizontal-scroll#scrollNext" data-horizontal-scroll-target="nextButton" class="rounded-full bg-neutral-900 p-2 ring-1 ring-neutral-800 hover:bg-neutral-800 disabled:opacity-30"><%= image_tag 'right.svg', class: 'h-5 w-5' %></button></div></div>
+    <% if @liked_albums.present? %>
+      <div class="mt-4 flex gap-4 overflow-x-auto pb-3" data-horizontal-scroll-target="scroller" data-action="wheel->horizontal-scroll#scrollByWheel scroll->horizontal-scroll#updateButtons">
+        <% @liked_albums.each do |album| %><%= render 'shared/album_card', album: album %><% end %>
       </div>
-      <% if @liked_tracks.present? %>
-        <div class="tracks flex flex-col gap-3 mt-3 pb-1">
-          <% @liked_tracks.each do |track| %>
-            <%= render 'shared/track', track: track, show_actions: false, show_like: true %>
-          <% end %>
-        </div>
-      <% else %>
-        <p class="mt-3 rounded-2xl bg-neutral-800 p-5 text-neutral-400">Нажимайте на плюс у треков — они появятся здесь.</p>
-      <% end %>
-    </section>
+    <% else %>
+      <%= render "shared/empty_state", title: "Любимых альбомов пока нет", description: "Добавляйте альбомы в коллекцию с их страницы или карточки." %>
+    <% end %>
+  </section>
 
-    <section class="liked-albums section">
-      <div class="flex items-end justify-between gap-3">
-        <h2 class="text-2xl">Любимые альбомы</h2>
-        <span class="text-neutral-400"><%= @liked_albums.size %></span>
+  <section class="mt-8" data-controller="horizontal-scroll">
+    <div class="flex items-end justify-between gap-4"><div><p class="text-sm text-neutral-500">Создано вами</p><h2 class="text-2xl font-bold text-white">Мои плейлисты <span class="text-neutral-500"><%= @created_playlists.size %></span></h2></div><div class="hidden items-center gap-2 sm:flex"><button type="button" data-action="horizontal-scroll#scrollPrevious" data-horizontal-scroll-target="previousButton" class="rounded-full bg-neutral-900 p-2 ring-1 ring-neutral-800 hover:bg-neutral-800 disabled:opacity-30"><%= image_tag 'left.svg', class: 'h-5 w-5' %></button><button type="button" data-action="horizontal-scroll#scrollNext" data-horizontal-scroll-target="nextButton" class="rounded-full bg-neutral-900 p-2 ring-1 ring-neutral-800 hover:bg-neutral-800 disabled:opacity-30"><%= image_tag 'right.svg', class: 'h-5 w-5' %></button></div></div>
+    <% if @created_playlists.present? %>
+      <div class="mt-4 flex gap-4 overflow-x-auto pb-3" data-horizontal-scroll-target="scroller" data-action="wheel->horizontal-scroll#scrollByWheel scroll->horizontal-scroll#updateButtons">
+        <% @created_playlists.each do |playlist| %><%= render 'shared/playlist_card', playlist: playlist, show_like: false %><% end %>
       </div>
-      <% if @liked_albums.present? %>
-        <div class="flex flex-row gap-5 mt-3 pb-1 overflow-x-auto">
-          <% @liked_albums.each do |album| %>
-            <%= render 'shared/album_card', album: album, show_like: true %>
-          <% end %>
-        </div>
-      <% else %>
-        <p class="mt-3 rounded-2xl bg-neutral-800 p-5 text-neutral-400">Любимые альбомы появятся после нажатия на плюс у альбома.</p>
-      <% end %>
-    </section>
-
-    <section class="created-playlists section">
-      <div class="flex items-end justify-between gap-3">
-        <h2 class="text-2xl">Мои плейлисты</h2>
-        <span class="text-neutral-400"><%= @created_playlists.size %></span>
-      </div>
-      <% if @created_playlists.present? %>
-        <div class="flex flex-row gap-5 mt-3 pb-1 overflow-x-auto">
-          <% @created_playlists.each do |playlist| %>
-            <%= render 'shared/playlist_card', playlist: playlist, show_like: false %>
-          <% end %>
-        </div>
-      <% else %>
-        <p class="mt-3 rounded-2xl bg-neutral-800 p-5 text-neutral-400">Создайте первый плейлист через форму выше.</p>
-      <% end %>
-    </section>
-
-    <section class="liked-playlists section">
-      <div class="flex items-end justify-between gap-3">
-        <h2 class="text-2xl">Понравившиеся плейлисты</h2>
-        <span class="text-neutral-400"><%= @liked_playlists.size %></span>
-      </div>
-      <% if @liked_playlists.present? %>
-        <div class="flex flex-row gap-5 mt-3 pb-1 overflow-x-auto">
-          <% @liked_playlists.each do |playlist| %>
-            <%= render 'shared/playlist_card', playlist: playlist, show_like: true %>
-          <% end %>
-        </div>
-      <% else %>
-        <p class="mt-3 rounded-2xl bg-neutral-800 p-5 text-neutral-400">Понравившиеся чужие плейлисты будут здесь, когда появится полноценная страница плейлистов.</p>
-      <% end %>
-    </section>
-  </div>
-</div>
+    <% else %>
+      <%= render "shared/empty_state", title: "Плейлистов пока нет", description: "Создайте плейлист выше или сохраните текущую очередь из плеера." %>
+    <% end %>
+  </section>
+</main>

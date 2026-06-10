@@ -1,0 +1,79 @@
+<%= render "shared/header" %>
+
+<main class="<%= page_shell_class %>">
+  <div class="mx-auto max-w-4xl">
+    <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-green-300">Плейлист</p>
+        <h1 class="mt-2 text-3xl font-black text-white">Редактирование</h1>
+      </div>
+      <%= link_to "Назад", playlist_path(@playlist), class: secondary_button_class %>
+    </div>
+
+    <%= form_with model: @playlist, local: true, html: { multipart: true, class: "grid gap-6" }, data: { controller: "playlist-editor", playlist_editor_search_url_value: search_tracks_playlists_path } do |f| %>
+      <section class="rounded-[2rem] border border-neutral-800 bg-neutral-900/70 p-5 shadow-xl shadow-black/20 sm:p-7">
+        <div data-controller="preview" data-preview-default-url-value="<%= playlist_cover_url(@playlist) %>" class="grid gap-5 sm:grid-cols-[10rem_1fr] sm:items-start">
+          <div>
+            <%= image_tag playlist_cover_url(@playlist), class: "h-40 w-40 rounded-[1.75rem] object-cover ring-1 ring-neutral-800", alt: @playlist.name, data: { preview_target: "preview" } %>
+          </div>
+          <div class="grid gap-4">
+            <div>
+              <%= f.label :name, "Название", class: "mb-2 block text-sm text-neutral-400" %>
+              <%= f.text_field :name, required: true, class: "w-full rounded-2xl border border-neutral-800 bg-neutral-950/70 px-4 py-3 text-white outline-none focus:border-green-400" %>
+            </div>
+            <div>
+              <%= f.label :description, "Описание", class: "mb-2 block text-sm text-neutral-400" %>
+              <%= f.text_area :description, rows: 3, class: "w-full resize-none rounded-2xl border border-neutral-800 bg-neutral-950/70 px-4 py-3 text-white outline-none focus:border-green-400" %>
+            </div>
+            <div>
+              <%= f.label :cover_image, "Обложка", class: "mb-2 block text-sm text-neutral-400" %>
+              <%= f.file_field :cover_image, accept: "image/*", class: "w-full rounded-2xl border border-neutral-800 bg-neutral-950/70 px-4 py-3 text-sm text-white file:mr-4 file:rounded-xl file:border-0 file:bg-neutral-800 file:px-3 file:py-2 file:text-white", data: { preview_target: "input", action: "change->preview#preview" } %>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="rounded-[2rem] border border-neutral-800 bg-neutral-900/70 p-5 shadow-xl shadow-black/20 sm:p-7">
+        <div class="mb-5">
+          <h2 class="text-2xl font-black text-white">Треки</h2>
+          <p class="mt-1 text-sm text-neutral-500">Ищите треки по названию, альбому или артисту. Порядок меняется перетаскиванием.</p>
+        </div>
+
+        <input type="hidden" name="playlist_track_ids" value="<%= @tracks.map(&:id).join(',') %>" data-playlist-editor-target="trackIds">
+
+        <div class="relative mb-5">
+          <input type="search" placeholder="Найти трек, альбом или артиста" autocomplete="off" class="w-full rounded-2xl border border-neutral-800 bg-neutral-950/70 px-4 py-3 text-white outline-none focus:border-green-400" data-playlist-editor-target="searchInput" data-action="input->playlist-editor#queueSearch focus->playlist-editor#queueSearch">
+          <div data-playlist-editor-target="searchResults" class="hidden absolute left-0 right-0 top-full z-30 mt-2 max-h-80 overflow-y-auto rounded-3xl border border-neutral-800 bg-neutral-950 p-2 shadow-2xl shadow-black/50"></div>
+        </div>
+
+        <div class="grid gap-3" data-playlist-editor-target="trackList">
+          <% @tracks.each_with_index do |track, index| %>
+            <div data-track-id="<%= track.id %>" draggable="true" data-action="dragstart->playlist-editor#dragStart dragover->playlist-editor#dragOver dragend->playlist-editor#dragEnd" class="grid grid-cols-[auto_auto_1fr_auto] items-center gap-3 rounded-2xl border border-neutral-800 bg-neutral-950/60 px-3 py-3">
+              <span class="cursor-grab rounded-xl bg-neutral-900 px-3 py-2 text-sm text-neutral-500">☰</span>
+              <span data-position class="flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-900 text-sm font-bold text-neutral-300"><%= index + 1 %></span>
+              <span class="flex min-w-0 items-center gap-3">
+                <% image_url = track.album.cover_image.attached? ? url_for(track.album.cover_image) : asset_path("default-music.svg") %>
+                <%= image_tag image_url, class: "h-10 w-10 rounded-xl object-cover ring-1 ring-neutral-800", alt: track.name %>
+                <span class="min-w-0">
+                  <span class="block truncate font-semibold text-white"><%= track.name %></span>
+                  <span class="block truncate text-sm text-neutral-500"><%= track.artist.name %> · <%= track.album.name %></span>
+                </span>
+              </span>
+              <button type="button" data-action="playlist-editor#remove" class="rounded-xl px-3 py-2 text-sm text-red-300 transition hover:bg-red-500/10">Удалить</button>
+            </div>
+          <% end %>
+        </div>
+      </section>
+
+      <div class="flex flex-col gap-3 sm:flex-row">
+        <%= f.submit "Сохранить плейлист", class: "rounded-2xl bg-green-400 px-5 py-3 font-bold text-black transition hover:bg-green-300 cursor-pointer" %>
+        <%= link_to "Отмена", playlist_path(@playlist), class: "rounded-2xl border border-neutral-700 bg-neutral-950/70 px-5 py-3 text-center font-semibold text-white transition hover:bg-neutral-800" %>
+      </div>
+    <% end %>
+
+    <section class="mt-6 rounded-[2rem] border border-red-400/30 bg-red-500/5 p-5 sm:p-6">
+      <h2 class="text-lg font-bold text-red-200">Удаление плейлиста</h2>
+      <%= button_to "Удалить плейлист", playlist_path(@playlist), method: :delete, data: { turbo_confirm: "Удалить плейлист #{@playlist.name}?" }, class: "mt-4 rounded-2xl border border-red-400/60 px-5 py-3 font-bold text-red-200 transition hover:bg-red-500 hover:text-white cursor-pointer" %>
+    </section>
+  </div>
+</main>

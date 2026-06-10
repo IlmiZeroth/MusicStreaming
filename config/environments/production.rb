@@ -1,6 +1,8 @@
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
+  config.active_job.queue_adapter = :sidekiq
+
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Code is not reloaded between requests.
@@ -52,21 +54,16 @@ Rails.application.configure do
   # Replace the default in-process and non-durable queuing backend for Active Job.
   # config.active_job.queue_adapter = :resque
 
-  # Ignore bad email addresses and do not raise email delivery errors.
-  # Set this to true and configure the email server for immediate delivery to raise delivery errors.
-  # config.action_mailer.raise_delivery_errors = false
+  # External email delivery is disabled for this project. Password reset
+  # requests are stored as internal admin messages in the database instead.
+  app_host = ENV.fetch("APP_HOST", "example.com")
+  app_protocol = ENV.fetch("APP_PROTOCOL", "https")
+  host, port = app_host.split(":", 2)
 
-  # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "example.com" }
-
-  # Specify outgoing SMTP server. Remember to add smtp/* credentials via bin/rails credentials:edit.
-  # config.action_mailer.smtp_settings = {
-  #   user_name: Rails.application.credentials.dig(:smtp, :user_name),
-  #   password: Rails.application.credentials.dig(:smtp, :password),
-  #   address: "smtp.example.com",
-  #   port: 587,
-  #   authentication: :plain
-  # }
+  config.action_mailer.perform_deliveries = false
+  config.action_mailer.raise_delivery_errors = false
+  config.action_mailer.delivery_method = :test
+  config.action_mailer.default_url_options = { host: host, protocol: app_protocol, port: port.presence }
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).

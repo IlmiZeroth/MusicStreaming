@@ -123,6 +123,7 @@
     <orderEntry type="library" scope="PROVIDED" name="rainbow (v3.1.1, ruby-3.4.8-p72) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="rake (v13.3.1, ruby-3.4.8-p72) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="rdoc (v7.2.0, ruby-3.4.8-p72) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="redis-client (v0.29.0, ruby-3.4.8-p72) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="regexp_parser (v2.11.3, ruby-3.4.8-p72) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="reline (v0.6.3, ruby-3.4.8-p72) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="responders (v3.2.0, ruby-3.4.8-p72) [gem]" level="application" />
@@ -137,6 +138,7 @@
     <orderEntry type="library" scope="PROVIDED" name="rubyzip (v3.2.2, ruby-3.4.8-p72) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="securerandom (v0.4.1, ruby-3.4.8-p72) [gem]" level="application" />
     <orderEntry type="library" scope="TEST" name="selenium-webdriver (v4.41.0, ruby-3.4.8-p72) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="sidekiq (v8.1.6, ruby-3.4.8-p72) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="solid_cable (v3.0.12, ruby-3.4.8-p72) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="solid_cache (v1.0.10, ruby-3.4.8-p72) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="solid_queue (v1.4.0, ruby-3.4.8-p72) [gem]" level="application" />

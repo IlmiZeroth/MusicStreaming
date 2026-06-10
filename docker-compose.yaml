@@ -1,39 +1,97 @@
+x-app: &app
+  build: .
+  environment:
+    RAILS_ENV: development
+    DATABASE_URL: postgres://postgres:postgres@db:5432/musicstreaming_development
+    REDIS_URL: redis://redis:6379/0
+    BUNDLE_PATH: /usr/local/bundle
+  volumes:
+    - .:/rails
+    - bundle:/usr/local/bundle
+    - node_modules:/rails/node_modules
+
 services:
-  db:
-    image: postgres:16.0
-    container_name: music_streaming_postgres
-    environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    volumes:
-       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    networks:
-      - myapp_network
+  setup:
+    <<: *app
+    command: bash -lc "bundle exec rails db:prepare db:seed"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   web:
-    build: .
-    container_name: music_streaming_rails
-    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
-    volumes:
-      - .:/myapp
+    <<: *app
+    command: bash -lc "bundle exec rails server -b 0.0.0.0 -p 3000"
     ports:
       - "3000:3000"
-    environment:
-      DB_HOST: db
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      RAILS_ENV: development
     depends_on:
-      - db
-    networks:
-      - myapp_network
+      setup:
+        condition: service_completed_successfully
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  assets:
+    <<: *app
+    command: >
+      bash -lc '
+        yarn install --check-files
+
+        # Build CSS once on container start. In this project tailwindcss:watch
+        # can exit immediately with code 0, so it must not control the
+        # lifetime of the assets container.
+        bundle exec rails tailwindcss:build || true
+
+        # Keep the container alive with the JS watcher in the foreground.
+        exec ./node_modules/.bin/esbuild app/javascript/application.js --bundle --sourcemap --format=esm --outdir=app/assets/builds --public-path=/assets --watch=forever
+      '
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  sidekiq:
+    <<: *app
+    command: bash -lc "bundle exec sidekiq -C config/sidekiq.yml"
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: musicstreaming_development
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d musicstreaming_development"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
 volumes:
-  postgres_data:
-
-networks:
-  myapp_network:
-    driver: bridge
+  bundle:
+  node_modules:
+  postgres:
+  redis:

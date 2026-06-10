@@ -1,6 +1,7 @@
 <% if resource.errors.any? %>
-  <div id="error_explanation" data-turbo-temporary>
-    <ul class = "text-red-500 flex justify-center flex-col">
+  <div class="mb-5 rounded-2xl border border-red-400/60 bg-red-500/10 p-4 text-sm text-red-100">
+    <div class="font-bold">Не удалось сохранить:</div>
+    <ul class="mt-2 list-disc space-y-1 pl-5">
       <% resource.errors.full_messages.each do |message| %>
         <li><%= message %></li>
       <% end %>

@@ -1,38 +1,57 @@
-<% track_audio_url = track.audio_file.attached? ? url_for(track.audio_file) : '' %>
+<% track_audio_url = track.audio_file.attached? ? audio_track_path(track) : '' %>
+<% track_metadata_url = track.audio_file.attached? ? metadata_track_path(track) : '' %>
 <% track_image_url = track.album.cover_image.attached? ? url_for(track.album.cover_image) : asset_path('default-music.svg') %>
 <% liked = current_user.liked_track?(track) %>
 
 <div data-controller="track-card"
+     data-track-card-target="active"
      data-track-card-id-value="<%= track.id %>"
-     data-track-card-artist-value="<%= track.user.username %>"
+     data-track-card-artist-value="<%= track.artist.name %>"
      data-track-card-name-value="<%= track.name %>"
      data-track-card-url-value="<%= track_audio_url %>"
+     data-track-card-metadata-url-value="<%= track_metadata_url %>"
+     data-track-card-duration-value="<%= track.duration %>"
      data-track-card-image-value="<%= track_image_url %>"
      data-track-card-liked-value="<%= liked %>"
      data-track-card-like-url-value="<%= like_track_path(track) %>"
      data-track-card-unlike-url-value="<%= unlike_track_path(track) %>"
-     class="track-card text-white bg-neutral-800 h-13 ml-10 mr-10 pl-2 pr-5 rounded-2xl flex items-center flex-row flex-shrink-0">
-  <button type="button" data-action="click->track-card#playTrack" class="hover:cursor-pointer">
-    <%= image_tag "play.svg", class: "w-7 h-7" %>
+     data-track-card-play-icon-value="<%= asset_path('play.svg') %>"
+     data-track-card-pause-icon-value="<%= asset_path('pause.svg') %>"
+     class="mx-0 grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-3 rounded-2xl border border-neutral-800 bg-neutral-900/70 px-3 py-3 text-white transition hover:border-neutral-700 hover:bg-neutral-900 sm:grid-cols-[auto_1fr_auto_auto_auto] sm:px-4">
+  <button type="button" data-action="click->track-card#playTrack" data-track-card-target="artwork" class="flex h-11 w-11 items-center justify-center rounded-2xl bg-neutral-800 transition hover:bg-neutral-700 hover:cursor-pointer" title="Воспроизвести" aria-label="Воспроизвести">
+    <%= image_tag "play.svg", class: "h-7 w-7", data: { track_card_target: "playIcon" } %>
   </button>
-  <div class="track-info flex flex-col truncate w-full ml-2 mr-2">
-    <div class="track-name text-white"><%= track.name %></div>
-    <div class="track-artist text-neutral-400 hover:text-gray-400"><%= link_to track.user.username, profile_path(track.user.id) %></div>
+
+  <div class="min-w-0">
+    <div class="truncate font-semibold text-white" title="<%= track.name %>"><%= track.name %></div>
+    <div class="mt-0.5 truncate text-sm text-neutral-400" title="<%= track.artist.name %>">
+      <%= link_to track.artist.name, profile_path(track.artist.id), class: "hover:text-white" %>
+      <span class="text-neutral-600"> · </span>
+      <%= link_to track.album.name, album_path(track.album), class: "hover:text-white" %>
+    </div>
+  </div>
+
+  <div class="flex h-10 w-10 items-center justify-center">
+    <%= render 'shared/track_playlist_button',
+               track: track,
+               button_class: 'flex h-10 w-10 items-center justify-center rounded-2xl bg-neutral-950/80 text-lg font-black text-green-300 transition hover:bg-neutral-800 hover:text-green-200 hover:cursor-pointer',
+               label: '+',
+               title: 'Сохранить в плейлист' %>
   </div>
 
   <% if local_assigns.fetch(:show_like, true) %>
-    <div class="like-button w-8 h-8 mr-2 flex items-center justify-center">
-      <%= render 'shared/track_like_button', track: track %>
+    <div class="flex h-10 w-10 items-center justify-center">
+      <%= render 'shared/track_like_button', track: track, button_class: 'flex h-10 w-10 items-center justify-center rounded-2xl bg-neutral-950/80 transition hover:bg-neutral-800 hover:cursor-pointer', icon_class: 'h-6 w-6' %>
     </div>
   <% end %>
 
   <% if local_assigns[:show_actions] || @show_actions %>
-    <div class="delete-button w-7 h-7 mr-2">
+    <div class="flex h-10 w-10 items-center justify-center">
       <%= button_to track_path(track),
                     method: :delete,
-                    class: "hover:cursor-pointer",
+                    class: "flex h-10 w-10 items-center justify-center rounded-2xl bg-neutral-950/80 transition hover:bg-red-500/20 hover:cursor-pointer",
                     data: { turbo_confirm: "Вы уверены, что хотите удалить трек '#{track.name}'?" } do %>
-        <%= image_tag "delete.svg" %>
+        <%= image_tag "delete.svg", class: "h-5 w-5" %>
       <% end %>
     </div>
   <% end %>

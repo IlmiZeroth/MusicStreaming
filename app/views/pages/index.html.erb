@@ -1,21 +1,59 @@
 <%= render "shared/header" %>
-<div class = "page">
-  <div class = "page-container text-white flex flex-col gap-5 mb-40">
-    <div class = "section ml-5 mr-5 mt-5">
-      <h2 class = "text-2xl">Популярные треки</h2>
-      <div class = "tracks flex flex-row gap-5 mt-3 pb-1 overflow-x-auto">
-        <% @popular_tracks.each do |track| %>
-          <%= render 'shared/track_card', track: track %>
-        <% end %>
+
+<main class="<%= page_shell_class %>">
+  <section class="overflow-hidden rounded-[2rem] border border-neutral-800 bg-neutral-900/70 p-5 shadow-xl shadow-black/20 sm:p-7 lg:p-8">
+    <div class="grid gap-6 lg:grid-cols-[1.25fr_0.75fr] lg:items-center">
+      <div>
+        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-green-300">Каталог</p>
+        <h1 class="mt-3 text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl">Музыка без лишних экранов</h1>
+        <p class="mt-3 max-w-2xl text-neutral-400">Ищите артистов, запускайте треки, сохраняйте плейлисты и собирайте личную коллекцию в одном месте.</p>
       </div>
     </div>
-    <div class = "section ml-5 mr-5 mt-5">
-      <h2 class = "text-2xl">Новинки</h2>
-      <div class = "tracks flex flex-row gap-5 mt-3 pb-1 overflow-x-auto">
-        <% @new_releases.each do |track| %>
-          <%= render 'shared/track_card', track: track %>
-        <% end %>
-      </div>
-    </div>
-  </div>
-</div>
+  </section>
+
+  <% if @popular_tracks.blank? && @new_releases.blank? %>
+    <%= render "shared/empty_state",
+               title: "Музыки пока нет",
+               description: "Когда модераторы загрузят первые треки, здесь появятся популярные треки и новинки." %>
+  <% else %>
+    <% if @popular_tracks.present? %>
+      <section class="mt-8" data-controller="horizontal-scroll" data-playback-queue-name-value="Популярные треки">
+        <div class="flex items-end justify-between gap-4">
+          <div>
+            <p class="text-sm text-neutral-500">Что слушают чаще всего</p>
+            <%= link_to popular_tracks_path, class: "group inline-flex items-center gap-2" do %><h2 class="text-2xl font-bold text-white group-hover:text-green-300">Популярные треки</h2><span class="text-sm text-neutral-500 group-hover:text-green-300">Топ 100</span><% end %>
+          </div>
+          <div class="hidden items-center gap-2 sm:flex">
+            <button type="button" data-action="horizontal-scroll#scrollPrevious" data-horizontal-scroll-target="previousButton" class="rounded-full bg-neutral-900 p-2 ring-1 ring-neutral-800 hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-default transition" title="Назад"><%= image_tag "left.svg", class: "h-5 w-5" %></button>
+            <button type="button" data-action="horizontal-scroll#scrollNext" data-horizontal-scroll-target="nextButton" class="rounded-full bg-neutral-900 p-2 ring-1 ring-neutral-800 hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-default transition" title="Вперёд"><%= image_tag "right.svg", class: "h-5 w-5" %></button>
+          </div>
+        </div>
+        <div class="no-scrollbar mt-4 flex gap-4 overflow-x-auto pb-3" data-horizontal-scroll-target="scroller" data-action="wheel->horizontal-scroll#scrollByWheel scroll->horizontal-scroll#updateButtons">
+          <% @popular_tracks.each do |track| %>
+            <%= render "shared/track_card", track: track %>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+
+    <% if @new_releases.present? %>
+      <section class="mt-8" data-controller="horizontal-scroll" data-playback-queue-name-value="Новинки">
+        <div class="flex items-end justify-between gap-4">
+          <div>
+            <p class="text-sm text-neutral-500">Недавно добавлено</p>
+            <%= link_to new_tracks_path, class: "group inline-flex items-center gap-2" do %><h2 class="text-2xl font-bold text-white group-hover:text-green-300">Новинки</h2><span class="text-sm text-neutral-500 group-hover:text-green-300">100 самых новых</span><% end %>
+          </div>
+          <div class="hidden items-center gap-2 sm:flex">
+            <button type="button" data-action="horizontal-scroll#scrollPrevious" data-horizontal-scroll-target="previousButton" class="rounded-full bg-neutral-900 p-2 ring-1 ring-neutral-800 hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-default transition" title="Назад"><%= image_tag "left.svg", class: "h-5 w-5" %></button>
+            <button type="button" data-action="horizontal-scroll#scrollNext" data-horizontal-scroll-target="nextButton" class="rounded-full bg-neutral-900 p-2 ring-1 ring-neutral-800 hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-default transition" title="Вперёд"><%= image_tag "right.svg", class: "h-5 w-5" %></button>
+          </div>
+        </div>
+        <div class="no-scrollbar mt-4 flex gap-4 overflow-x-auto pb-3" data-horizontal-scroll-target="scroller" data-action="wheel->horizontal-scroll#scrollByWheel scroll->horizontal-scroll#updateButtons">
+          <% @new_releases.each do |track| %>
+            <%= render "shared/track_card", track: track %>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+  <% end %>
+</main>

@@ -28,5 +28,29 @@ application.register("like-button", LikeButtonController)
 import FollowButtonController from "./follow_button_controller"
 application.register("follow-button", FollowButtonController)
 
+import HorizontalScrollController from "./horizontal_scroll_controller"
+application.register("horizontal-scroll", HorizontalScrollController)
+
+import NavigationHistoryController from "./navigation_history_controller"
+application.register("navigation-history", NavigationHistoryController)
+
+import SmartBackController from "./smart_back_controller"
+application.register("smart-back", SmartBackController)
+
 import PreviewController from "./preview_controller"
 application.register("preview", PreviewController)
+
+import EntitySearchController from "./entity_search_controller"
+application.register("entity-search", EntitySearchController)
+
+import LiveSearchController from "./live_search_controller"
+application.register("live-search", LiveSearchController)
+
+import PlaylistEditorController from "./playlist_editor_controller"
+application.register("playlist-editor", PlaylistEditorController)
+
+import BulkTracksController from "./bulk_tracks_controller"
+application.register("bulk-tracks", BulkTracksController)
+
+import TrackPlaylistController from "./track_playlist_controller"
+application.register("track-playlist", TrackPlaylistController)
