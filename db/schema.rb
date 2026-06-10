@@ -10,16 +10,196 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_16_112209) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_10_103000) do
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "pg_catalog.plpgsql"
+
+  create_table "active_storage_attachments", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.bigint "record_id", null: false
+    t.string "record_type", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", force: :cascade do |t|
+    t.bigint "byte_size", null: false
+    t.string "checksum"
+    t.string "content_type"
+    t.datetime "created_at", null: false
+    t.string "filename", null: false
+    t.string "key", null: false
+    t.text "metadata"
+    t.string "service_name", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "active_storage_variant_records", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.string "variation_digest", null: false
+    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+
+
+  create_table "admin_mail_messages", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "body", null: false
+    t.datetime "read_at"
+    t.string "message_type", default: "password_reset", null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.bigint "recipient_id"
+    t.string "recipient_email", null: false
+    t.string "subject", null: false
+    t.datetime "updated_at", null: false
+    t.index ["message_type", "created_at"], name: "index_admin_mail_messages_on_message_type_and_created_at"
+    t.index ["read_at"], name: "index_admin_mail_messages_on_read_at"
+    t.index ["recipient_id"], name: "index_admin_mail_messages_on_recipient_id"
+  end
+
+  create_table "artists", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id"
+    t.text "description", default: "", null: false
+    t.bigint "legacy_user_id"
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_artists_on_created_by_id"
+    t.index ["legacy_user_id"], name: "index_artists_on_legacy_user_id", unique: true
+    t.index ["name"], name: "index_artists_on_name", unique: true
+  end
+
+  create_table "audit_logs", force: :cascade do |t|
+    t.string "action", null: false
+    t.bigint "actor_id"
+    t.bigint "auditable_id"
+    t.string "auditable_type"
+    t.datetime "created_at", null: false
+    t.string "ip_address"
+    t.jsonb "metadata", default: {}, null: false
+    t.datetime "updated_at", null: false
+    t.string "user_agent"
+    t.index ["action", "created_at"], name: "index_audit_logs_on_action_and_created_at"
+    t.index ["actor_id", "created_at"], name: "index_audit_logs_on_actor_id_and_created_at"
+    t.index ["actor_id"], name: "index_audit_logs_on_actor_id"
+    t.index ["auditable_type", "auditable_id"], name: "index_audit_logs_on_auditable"
+  end
+
+  create_table "album_likes", force: :cascade do |t|
+    t.bigint "album_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["album_id"], name: "index_album_likes_on_album_id"
+    t.index ["user_id", "album_id"], name: "index_album_likes_on_user_id_and_album_id", unique: true
+    t.index ["user_id"], name: "index_album_likes_on_user_id"
+  end
+
+  create_table "albums", force: :cascade do |t|
+    t.bigint "artist_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "likes", default: 0, null: false
+    t.string "name"
+    t.date "release_date"
+    t.datetime "updated_at", null: false
+    t.index ["artist_id"], name: "index_albums_on_artist_id"
+  end
+
+  create_table "follows", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "followed_id"
+    t.bigint "follower_id"
+    t.datetime "updated_at", null: false
+    t.index ["follower_id", "followed_id"], name: "index_follows_on_follower_id_and_followed_id", unique: true
+  end
+
+  create_table "playlist_likes", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "playlist_id", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["playlist_id"], name: "index_playlist_likes_on_playlist_id"
+    t.index ["user_id", "playlist_id"], name: "index_playlist_likes_on_user_id_and_playlist_id", unique: true
+    t.index ["user_id"], name: "index_playlist_likes_on_user_id"
+  end
+
+  create_table "playlist_tracks", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "playlist_id", null: false
+    t.integer "position"
+    t.bigint "track_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["playlist_id"], name: "index_playlist_tracks_on_playlist_id"
+    t.index ["track_id"], name: "index_playlist_tracks_on_track_id"
+  end
+
+  create_table "playlists", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "name"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_playlists_on_user_id"
+  end
+
+  create_table "track_likes", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "track_id", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["track_id"], name: "index_track_likes_on_track_id"
+    t.index ["user_id", "track_id"], name: "index_track_likes_on_user_id_and_track_id", unique: true
+    t.index ["user_id"], name: "index_track_likes_on_user_id"
+  end
+
+  create_table "tracks", force: :cascade do |t|
+    t.bigint "album_id", null: false
+    t.text "audio_analysis_error"
+    t.string "audio_analysis_status", default: "pending", null: false
+    t.datetime "audio_analyzed_at"
+    t.jsonb "audio_peaks"
+    t.integer "audio_peaks_version"
+    t.datetime "created_at", null: false
+    t.integer "duration"
+    t.bigint "likes", default: 0, null: false
+    t.string "name"
+    t.integer "number_in_album"
+    t.bigint "streams", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["album_id"], name: "index_tracks_on_album_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.text "description", default: ""
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
     t.datetime "remember_created_at"
     t.datetime "reset_password_sent_at"
     t.string "reset_password_token"
     t.datetime "updated_at", null: false
+    t.integer "user_role", default: 0, null: false
+    t.string "username", default: "", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
+
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "admin_mail_messages", "users", column: "recipient_id"
+  add_foreign_key "artists", "users", column: "created_by_id"
+  add_foreign_key "audit_logs", "users", column: "actor_id"
+  add_foreign_key "album_likes", "albums"
+  add_foreign_key "album_likes", "users"
+  add_foreign_key "albums", "artists"
+  add_foreign_key "playlist_likes", "playlists"
+  add_foreign_key "playlist_likes", "users"
+  add_foreign_key "playlist_tracks", "playlists"
+  add_foreign_key "playlist_tracks", "tracks"
+  add_foreign_key "playlists", "users"
+  add_foreign_key "track_likes", "tracks"
+  add_foreign_key "track_likes", "users"
+  add_foreign_key "tracks", "albums"
 end

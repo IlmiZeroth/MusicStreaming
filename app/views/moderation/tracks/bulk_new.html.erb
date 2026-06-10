@@ -1,0 +1,52 @@
+<%= render "shared/header" %>
+
+<main class="<%= page_shell_class %>">
+  <div class="mx-auto max-w-5xl">
+    <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-green-300">Массовая загрузка</p>
+        <h1 class="mt-2 text-3xl font-black text-white">Загрузка треков в альбом</h1>
+        <p class="mt-2 text-neutral-400">Перетащите аудиофайлы, поправьте названия, номера в альбоме и порядок. Каждый трек уйдёт на анализ.</p>
+      </div>
+    </div>
+
+    <%= form_with url: bulk_create_moderation_tracks_path, method: :post, local: true, html: { multipart: true, class: "grid gap-6" }, data: { controller: "bulk-tracks", bulk_tracks_start_position_value: (@bulk_start_position || 1), action: "entity-search:selected->bulk-tracks#albumSelected" } do |f| %>
+      <section class="rounded-[2rem] border border-neutral-800 bg-neutral-900/70 p-5 shadow-xl shadow-black/20 sm:p-7">
+        <div class="relative" data-controller="entity-search" data-entity-search-url-value="<%= search_moderation_albums_path %>">
+          <label class="mb-2 block text-sm text-neutral-400">Альбом *</label>
+          <input type="text" value="<%= @selected_album&.moderation_label %>" placeholder="Начните вводить альбом или артиста" autocomplete="off" required class="w-full rounded-2xl border border-neutral-800 bg-neutral-950/70 px-4 py-3 text-white outline-none focus:border-green-400" data-entity-search-target="input" data-action="input->entity-search#search focus->entity-search#search">
+          <input type="hidden" name="bulk_tracks[album_id]" value="<%= @selected_album&.id %>" data-entity-search-target="hidden">
+          <div class="hidden absolute top-full left-0 right-0 z-30 mt-2 overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-950 shadow-2xl" data-entity-search-target="results"></div>
+        </div>
+      </section>
+
+      <section class="rounded-[2rem] border border-neutral-800 bg-neutral-900/70 p-5 shadow-xl shadow-black/20 sm:p-7">
+        <input data-bulk-tracks-target="input" data-action="change->bulk-tracks#filesChanged" class="hidden" type="file" name="bulk_tracks[audio_files][]" accept="audio/*" multiple>
+
+        <div data-bulk-tracks-target="dropzone" data-action="click->bulk-tracks#choose dragenter->bulk-tracks#dragEnter dragover->bulk-tracks#dragOver dragleave->bulk-tracks#dragLeave drop->bulk-tracks#drop" class="flex cursor-pointer flex-col items-center justify-center rounded-[2rem] border border-dashed border-neutral-700 bg-neutral-950/50 px-5 py-12 text-center transition hover:border-green-400/60 hover:bg-green-400/5">
+          <div class="flex h-16 w-16 items-center justify-center rounded-3xl bg-green-400/10 text-3xl">♫</div>
+          <h2 data-bulk-tracks-target="summary" class="mt-4 text-xl font-black text-white">Перенесите аудиофайлы сюда</h2>
+          <p class="mt-2 max-w-xl text-sm text-neutral-400">Поддерживаются MP3, WAV, OGG, FLAC, M4A и другие аудиоформаты браузера.</p>
+          <p data-bulk-tracks-target="status" class="mt-4 rounded-full border border-neutral-800 bg-neutral-900/80 px-4 py-2 text-sm text-neutral-300">Можно кликнуть по области или перетащить аудиофайлы мышью.</p>
+        </div>
+      </section>
+
+      <section class="rounded-[2rem] border border-neutral-800 bg-neutral-900/70 p-5 shadow-xl shadow-black/20 sm:p-7">
+        <div class="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 class="text-2xl font-black text-white">Порядок и названия</h2>
+            <p class="mt-1 text-sm text-neutral-500">Номер можно ввести вручную. Перетаскивание работает только за ручку слева и после него номера пересчитываются по порядку.</p>
+          </div>
+        </div>
+
+        <p data-bulk-tracks-target="empty" class="rounded-2xl border border-neutral-800 bg-neutral-950/60 p-5 text-neutral-400">Файлы ещё не выбраны.</p>
+        <div data-bulk-tracks-target="list" class="grid gap-3"></div>
+      </section>
+
+      <div class="flex flex-col gap-3 sm:flex-row">
+        <%= f.submit "Загрузить треки", class: "rounded-2xl bg-green-400 px-5 py-3 font-bold text-black transition hover:bg-green-300 cursor-pointer" %>
+        <%= link_to "Отмена", moderation_tracks_path, class: "rounded-2xl border border-neutral-700 bg-neutral-950/70 px-5 py-3 text-center font-semibold text-white transition hover:bg-neutral-800" %>
+      </div>
+    <% end %>
+  </div>
+</main>

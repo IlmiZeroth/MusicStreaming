@@ -1,0 +1,16 @@
+<section class="mt-8 rounded-[2rem] border border-neutral-800 bg-neutral-900/70 p-5 sm:p-6">
+  <h2 class="text-xl font-bold text-white">Быстро добавить трек</h2>
+  <p class="mt-1 text-sm text-neutral-400">Для полноценной загрузки с поиском альбома используйте панель модерации.</p>
+  <%= form_with model: Track.new, local: true, html: { multipart: true, class: "mt-4 grid gap-4 md:grid-cols-[1fr_1fr_auto] md:items-end" } do |f| %>
+    <div>
+      <%= f.label :name, "Название трека *", class: "mb-2 block text-sm text-neutral-400" %>
+      <%= f.text_field :name, class: "w-full rounded-2xl border border-neutral-800 bg-neutral-950/70 px-4 py-3 text-white outline-none focus:border-green-400", required: true %>
+    </div>
+    <div>
+      <%= f.label :audio_file, "Аудиофайл *", class: "mb-2 block text-sm text-neutral-400" %>
+      <%= f.file_field :audio_file, class: "w-full rounded-2xl border border-neutral-800 bg-neutral-950/70 px-4 py-3 text-white file:mr-4 file:rounded-xl file:border-0 file:bg-neutral-800 file:px-3 file:py-2 file:text-white", accept: "audio/*", required: true %>
+    </div>
+    <%= f.hidden_field :album_id, value: @album.id %>
+    <%= f.submit "+ Добавить", class: "rounded-2xl bg-green-400 px-5 py-3 font-bold text-black transition hover:bg-green-300 cursor-pointer" %>
+  <% end %>
+</section>

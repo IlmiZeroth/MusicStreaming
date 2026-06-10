@@ -1,0 +1,65 @@
+<%= render "shared/header" %>
+
+<main class="<%= page_shell_class %>">
+  <div class="mx-auto max-w-3xl">
+    <button type="button" data-controller="smart-back" data-action="click->smart-back#goBack" data-smart-back-fallback-url-value="<%= pages_path %>" class="mb-5 inline-flex items-center gap-2 rounded-2xl bg-neutral-950/70 px-3 py-2 text-sm text-neutral-300 ring-1 ring-neutral-800 transition hover:bg-neutral-800 hover:text-white">
+      ← Назад
+    </button>
+
+    <section class="rounded-[2rem] border border-neutral-800 bg-neutral-900/70 p-5 shadow-xl shadow-black/20 sm:p-7">
+      <div class="mb-6">
+        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-green-300">Аккаунт</p>
+        <h1 class="mt-2 text-3xl font-black text-white">Настройки аккаунта</h1>
+      </div>
+
+      <%= form_with model: @user, url: profile_update_settings_path(@user), method: :patch, local: true, html: { multipart: true, class: "grid gap-5" } do |f| %>
+        <div data-controller="preview" data-preview-default-url-value="<%= user_avatar_url(@user) %>" class="rounded-[1.5rem] border border-neutral-800 bg-neutral-950/40 p-4">
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <%= image_tag user_avatar_url(@user), class: "h-24 w-24 rounded-[1.5rem] object-cover ring-1 ring-neutral-800", alt: @user.username, data: { preview_target: "preview" } %>
+            <div class="flex-1">
+              <%= f.label :avatar, "Картинка аккаунта", class: "mb-2 block text-sm text-neutral-400" %>
+              <%= f.file_field :avatar, accept: "image/*", class: "w-full rounded-2xl border border-neutral-800 bg-neutral-900 px-4 py-3 text-sm text-white file:mr-4 file:rounded-xl file:border-0 file:bg-neutral-800 file:px-3 file:py-2 file:text-white", data: { preview_target: "input", action: "change->preview#preview" } %>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <%= f.label :username, "Имя пользователя", class: "mb-2 block text-sm text-neutral-400" %>
+            <%= f.text_field :username, class: "w-full rounded-2xl border border-neutral-800 bg-neutral-950/70 px-4 py-3 text-white outline-none focus:border-green-400", placeholder: "Введите имя пользователя" %>
+          </div>
+          <div>
+            <%= f.label :email, "Email", class: "mb-2 block text-sm text-neutral-400" %>
+            <%= f.email_field :email, class: "w-full rounded-2xl border border-neutral-800 bg-neutral-950/70 px-4 py-3 text-white outline-none focus:border-green-400", placeholder: "example@mail.com" %>
+          </div>
+        </div>
+
+        <div class="rounded-[1.5rem] border border-neutral-800 bg-neutral-950/40 p-4">
+          <h2 class="text-lg font-bold text-white">Изменить пароль</h2>
+          <p class="mt-1 text-sm text-neutral-500">Оставьте поля пустыми, если пароль менять не нужно.</p>
+          <div class="mt-4 grid gap-4 sm:grid-cols-2">
+            <div>
+              <%= f.label :password, "Новый пароль", class: "mb-2 block text-sm text-neutral-400" %>
+              <%= f.password_field :password, autocomplete: "new-password", class: "w-full rounded-2xl border border-neutral-800 bg-neutral-900 px-4 py-3 text-white outline-none focus:border-green-400" %>
+            </div>
+            <div>
+              <%= f.label :password_confirmation, "Подтверждение", class: "mb-2 block text-sm text-neutral-400" %>
+              <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "w-full rounded-2xl border border-neutral-800 bg-neutral-900 px-4 py-3 text-white outline-none focus:border-green-400" %>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-3 sm:flex-row">
+          <%= f.submit "Сохранить изменения", class: "rounded-2xl bg-green-400 px-5 py-3 font-bold text-black transition hover:bg-green-300 cursor-pointer" %>
+          <%= link_to "Отмена", pages_path, class: "rounded-2xl border border-neutral-700 bg-neutral-950/70 px-5 py-3 text-center font-semibold text-white transition hover:bg-neutral-800" %>
+        </div>
+      <% end %>
+    </section>
+
+    <section class="mt-5 rounded-[2rem] border border-red-400/30 bg-red-500/5 p-5 sm:p-6">
+      <h2 class="text-lg font-bold text-red-200">Опасная зона</h2>
+      <p class="mt-1 text-sm text-neutral-400">Удаление аккаунта необратимо.</p>
+      <%= button_to "Удалить аккаунт", user_registration_path, method: :delete, data: { turbo_confirm: "Вы уверены? Это действие необратимо!" }, class: "mt-4 rounded-2xl border border-red-400/60 px-5 py-3 font-bold text-red-200 transition hover:bg-red-500 hover:text-white cursor-pointer" %>
+    </section>
+  </div>
+</main>

@@ -1,0 +1,25 @@
+<% if @track.errors.any? %>
+  <div class="mb-4 rounded-2xl border border-red-400/60 bg-red-500/10 p-4 text-red-100"><div class="font-bold">Не удалось сохранить трек:</div><ul class="mt-2 list-disc pl-5"><% @track.errors.full_messages.each do |message| %><li><%= message %></li><% end %></ul></div>
+<% end %>
+
+<%= form_with model: [:moderation, @track], local: true, html: { multipart: true, class: "rounded-[2rem] border border-neutral-800 bg-neutral-900/70 p-5 shadow-xl shadow-black/20 sm:p-7 grid gap-5" } do |f| %>
+  <% if @track.persisted? %>
+    <div><span class="mb-2 block text-sm text-neutral-400">Альбом</span><div class="rounded-2xl border border-neutral-800 bg-neutral-950/70 px-4 py-3 text-neutral-200"><%= @track.album.moderation_label %></div><p class="mt-2 text-xs text-neutral-500">Альбом у трека не меняется при редактировании.</p></div>
+  <% else %>
+    <div class="relative" data-controller="entity-search" data-entity-search-url-value="<%= search_moderation_albums_path %>">
+      <%= f.label :album_id, "Альбом *", class: "mb-2 block text-sm text-neutral-400" %>
+      <input type="text" value="<%= @selected_album&.moderation_label %>" placeholder="Начните вводить альбом или артиста" autocomplete="off" required class="w-full rounded-2xl border border-neutral-800 bg-neutral-950/70 px-4 py-3 text-white outline-none focus:border-green-400" data-entity-search-target="input" data-action="input->entity-search#search focus->entity-search#search">
+      <%= f.hidden_field :album_id, value: @selected_album&.id, data: { entity_search_target: "hidden" } %>
+      <div class="hidden absolute top-full left-0 right-0 z-30 mt-2 overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-950 shadow-2xl" data-entity-search-target="results"></div>
+    </div>
+  <% end %>
+
+  <div class="grid gap-4 sm:grid-cols-2">
+    <div><%= f.label :name, "Название трека *", class: "mb-2 block text-sm text-neutral-400" %><%= f.text_field :name, required: true, class: "w-full rounded-2xl border border-neutral-800 bg-neutral-950/70 px-4 py-3 text-white outline-none focus:border-green-400" %></div>
+    <div><%= f.label :number_in_album, "Номер в альбоме", class: "mb-2 block text-sm text-neutral-400" %><%= f.number_field :number_in_album, min: 1, class: "w-full rounded-2xl border border-neutral-800 bg-neutral-950/70 px-4 py-3 text-white outline-none focus:border-green-400" %><p class="mt-2 text-xs text-neutral-500">Если оставить пустым, новый трек попадёт в конец альбома.</p></div>
+  </div>
+
+  <div><%= f.label :audio_file, @track.persisted? ? "Новый аудиофайл" : "Аудиофайл *", class: "mb-2 block text-sm text-neutral-400" %><%= f.file_field :audio_file, accept: "audio/*", required: !@track.persisted?, class: "w-full rounded-2xl border border-neutral-800 bg-neutral-950/70 px-4 py-3 text-white file:mr-4 file:rounded-xl file:border-0 file:bg-neutral-800 file:px-3 file:py-2 file:text-white" %><% if @track.persisted? && @track.audio_file.attached? %><p class="mt-2 text-sm text-neutral-400">Сейчас загружен: <%= @track.audio_file.filename %>. Необходимо время для загрузки трека.</p><% end %></div>
+
+  <div class="flex flex-col gap-3 sm:flex-row"><%= f.submit @track.persisted? ? "Сохранить" : "Загрузить трек", class: "rounded-2xl bg-green-400 px-5 py-3 font-bold text-black transition hover:bg-green-300 cursor-pointer" %><%= link_to "Отмена", moderation_tracks_path, class: "rounded-2xl border border-neutral-700 bg-neutral-950/70 px-5 py-3 text-center font-semibold text-white transition hover:bg-neutral-800" %></div>
+<% end %>

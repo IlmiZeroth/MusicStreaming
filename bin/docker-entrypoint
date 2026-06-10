@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -e
+
+cd /rails
+
+export PATH="/rails/bin:/usr/local/bundle/bin:${PATH}"
+
+rm -f tmp/pids/server.pid
+mkdir -p tmp/pids tmp/cache log storage
+
+bundle config set path "${BUNDLE_PATH:-/usr/local/bundle}" >/dev/null
+bundle check || bundle install
+
+if [ -f package.json ]; then
+  yarn install --check-files || yarn install
+fi
+
+exec "$@"

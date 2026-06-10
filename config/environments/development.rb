@@ -1,10 +1,12 @@
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
-  # Settings specified here will take precedence over those in config/application.rb.
+  config.active_job.queue_adapter = :sidekiq
 
+  # Settings specified here will take precedence over those in config/application.rb.
   # Make code changes take effect immediately without server restart.
   config.enable_reloading = true
+  Rails.application.config.active_storage.analyzers = []
 
   # Do not eager load code on boot.
   config.eager_load = false
@@ -31,14 +33,19 @@ Rails.application.configure do
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :local
 
-  # Don't care if the mailer can't send.
-  config.action_mailer.raise_delivery_errors = false
-
   # Make template changes take effect immediately.
   config.action_mailer.perform_caching = false
 
-  # Set localhost to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
+  # External email delivery is disabled for this project. Password reset
+  # requests are stored as internal admin messages in the database instead.
+  app_host = ENV.fetch("APP_HOST", "localhost:3000")
+  app_protocol = ENV.fetch("APP_PROTOCOL", "http")
+  host, port = app_host.split(":", 2)
+
+  config.action_mailer.perform_deliveries = false
+  config.action_mailer.raise_delivery_errors = false
+  config.action_mailer.delivery_method = :test
+  config.action_mailer.default_url_options = { host: host, protocol: app_protocol, port: port.presence }
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log

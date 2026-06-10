@@ -1,0 +1,63 @@
+<% track_audio_url = track.audio_file.attached? ? audio_track_path(track) : '' %>
+<% track_metadata_url = track.audio_file.attached? ? metadata_track_path(track) : '' %>
+<% track_image_url = track.album.cover_image.attached? ? url_for(track.album.cover_image) : asset_path('default-music.svg') %>
+<% liked = current_user.liked_track?(track) %>
+
+<div data-controller="track-card"
+     data-track-card-target="active"
+     data-track-card-id-value="<%= track.id %>"
+     data-track-card-artist-value="<%= track.artist.name %>"
+     data-track-card-name-value="<%= track.name %>"
+     data-track-card-url-value="<%= track_audio_url %>"
+     data-track-card-metadata-url-value="<%= track_metadata_url %>"
+     data-track-card-duration-value="<%= track.duration %>"
+     data-track-card-image-value="<%= track_image_url %>"
+     data-track-card-liked-value="<%= liked %>"
+     data-track-card-like-url-value="<%= like_track_path(track) %>"
+     data-track-card-unlike-url-value="<%= unlike_track_path(track) %>"
+     data-track-card-play-icon-value="<%= asset_path('play.svg') %>"
+     data-track-card-pause-icon-value="<%= asset_path('pause.svg') %>"
+     class="group grid grid-cols-[2.5rem_auto_1fr_auto_auto] items-center gap-3 rounded-2xl border border-neutral-800 bg-neutral-900/70 px-3 py-3 text-white transition hover:border-neutral-700 hover:bg-neutral-900 sm:grid-cols-[3rem_auto_1fr_auto_auto] sm:px-4">
+  <div class="text-center text-sm font-black text-neutral-500 sm:text-base"><%= index %></div>
+
+  <button type="button"
+          data-action="click->track-card#playTrack"
+          data-track-card-target="artwork"
+          class="relative h-14 w-14 overflow-hidden rounded-2xl bg-neutral-800 ring-1 ring-neutral-800 transition hover:cursor-pointer sm:h-16 sm:w-16"
+          title="Воспроизвести"
+          aria-label="Воспроизвести">
+    <% if track.album.cover_image&.attached? %>
+      <%= image_tag track.album.cover_image, class: "h-full w-full object-cover transition duration-300 group-hover:scale-105", alt: track.name %>
+    <% else %>
+      <div class="flex h-full w-full items-center justify-center p-3">
+        <%= image_tag 'default-music.svg', class: "h-full w-full", alt: track.name %>
+      </div>
+    <% end %>
+    <span class="absolute inset-0 flex items-center justify-center bg-black/55 opacity-0 transition group-hover:opacity-100">
+      <%= image_tag "play.svg", class: "h-8 w-8", data: { track_card_target: "playIcon" } %>
+    </span>
+  </button>
+
+  <div class="min-w-0">
+    <div class="truncate font-semibold text-white" title="<%= track.name %>"><%= track.name %></div>
+    <div class="mt-0.5 truncate text-sm text-neutral-400" title="<%= track.artist.name %> · <%= track.album.name %>">
+      <%= link_to track.artist.name, profile_path(track.artist.id), class: "hover:text-white" %>
+      <span class="text-neutral-600"> · </span>
+      <%= link_to track.album.name, album_path(track.album), class: "hover:text-white" %>
+    </div>
+  </div>
+
+  <div class="flex h-10 w-10 items-center justify-center">
+    <%= render 'shared/track_playlist_button',
+               track: track,
+               button_class: 'flex h-9 w-9 items-center justify-center rounded-2xl bg-neutral-950/70 text-sm font-black text-neutral-300 transition hover:bg-green-400 hover:text-black hover:cursor-pointer',
+               label: '+',
+               title: 'Сохранить в плейлист' %>
+  </div>
+
+  <% if local_assigns.fetch(:show_like, true) %>
+    <div class="flex h-10 w-10 items-center justify-center">
+      <%= render 'shared/track_like_button', track: track, button_class: 'flex h-9 w-9 items-center justify-center rounded-2xl bg-neutral-950/70 transition hover:bg-neutral-800 hover:cursor-pointer', icon_class: 'h-6 w-6' %>
+    </div>
+  <% end %>
+</div>

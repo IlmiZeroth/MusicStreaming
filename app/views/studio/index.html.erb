@@ -1,0 +1,26 @@
+<%= render "shared/header" %>
+
+<div class = "studio-page mb-40">
+  <div class = "studio-content">
+    <%= render "shared/album_create" %>
+
+    <div class = "albums section ml-5 mr-5 mt-5" data-controller="horizontal-scroll">
+      <div class="flex items-center justify-between gap-3">
+        <h2 class = "text-2xl text-white">Альбомы</h2>
+        <div class="flex items-center gap-2">
+          <button type="button" data-action="horizontal-scroll#scrollPrevious" data-horizontal-scroll-target="previousButton" class="rounded-full bg-neutral-800/90 p-1.5 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-default transition-colors" title="Назад">
+            <%= image_tag 'left.svg', class: 'w-5 h-5' %>
+          </button>
+          <button type="button" data-action="horizontal-scroll#scrollNext" data-horizontal-scroll-target="nextButton" class="rounded-full bg-neutral-800/90 p-1.5 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-default transition-colors" title="Вперёд">
+            <%= image_tag 'right.svg', class: 'w-5 h-5' %>
+          </button>
+        </div>
+      </div>
+      <div class = "flex flex-row gap-5 mt-3 py-1 px-1 overflow-x-auto" data-horizontal-scroll-target="scroller" data-action="wheel->horizontal-scroll#scrollByWheel scroll->horizontal-scroll#updateButtons">
+        <% @albums.each do |album| %>
+          <%= render 'shared/album_card', album: album, show_actions: true %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
