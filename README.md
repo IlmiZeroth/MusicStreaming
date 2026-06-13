@@ -158,7 +158,7 @@
 ### 1. Клонировать репозиторий
 
 ```bash
-git clone https://github.com/username/MusicStreaming.git
+git clone git@github.com:IlmiZeroth/MusicStreaming.git
 cd MusicStreaming
 ```
 
